@@ -124,7 +124,6 @@ def concurrent_bfs(Graphs, sources, depth_limit=None, offload=False):
         The size of each Series (ie. the number of sources per graph)
         is flexible, but cannot exceed the size of the corresponding graph.
 
-
     depth_limit : Integer, optional, default=None
         Limit the depth of the search. Terminates if no more vertices are
         reachable within the distance of depth_limit
@@ -201,10 +200,6 @@ def multi_source_bfs(
         The size of the series should be at least one and cannot exceed the
         size of the graph.
 
-    depth_limit : Integer, optional, default=None
-        Limit the depth of the search. Terminates if no more vertices are
-        reachable within the distance of depth_limit
-
     components : cudf.DataFrame, optional, default=None
         GPU Dataframe containing the component information.
         Passing this information may impact the return type.
@@ -215,6 +210,10 @@ def multi_source_bfs(
             vertex IDs
         components['color'] : cudf.Series
             component IDs/color for vertices.
+
+    depth_limit : Integer, optional, default=None
+        Limit the depth of the search. Terminates if no more vertices are
+        reachable within the distance of depth_limit
 
     offload : boolean, optional, default=False
         Indicates if output should be written to the disk.
