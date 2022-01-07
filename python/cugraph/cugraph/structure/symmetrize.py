@@ -59,7 +59,7 @@ def symmetrize_df(df, src_name, dst_name, multi=False, symmetrize=True):
     >>  Download dataset from https://github.com/rapidsai/cugraph/datasets/...
     >>> M = cudf.read_csv('datasets/karate.csv', delimiter=' ',
     ...                   dtype=['int32', 'int32', 'float32'], header=None)
-    >>> sym_df = symmetrize(M, '0', '1')
+    >>> sym_df = symmetrize_df(M, '0', '1')
 
     """
     #

@@ -70,8 +70,8 @@ def minimum_spanning_tree(
     G : cuGraph.Graph or networkx.Graph
         cuGraph graph descriptor with connectivity information.
 
-    weight : string
-        default to the weights in the graph, if the graph edges do not have a
+    weight : string or None
+        Default to the weights in the graph, if the graph edges do not have a
         weight attribute a default weight of 1 will be used.
 
     algorithm : string
@@ -86,6 +86,16 @@ def minimum_spanning_tree(
     G_mst : cuGraph.Graph or networkx.Graph
         A graph descriptor with a minimum spanning tree or forest.
         The networkx graph will not have all attributes copied over
+
+    Example
+    -------
+    >>> import cudf, cugraph
+    >>> M = cudf.read_csv('datasets/karate_undirected.csv',
+    ...                     delimiter='\t', dtype=['int32', 'int32'],
+    ...                     header=None)
+    >>> G = cugraph.Graph()
+    >>> G.from_cudf_edgelist(M, source='0', destination='1')
+    >>> MST = cugraph.minimum_spanning_tree(G)
 
     """
 
@@ -110,7 +120,7 @@ def maximum_spanning_tree(
     G : cuGraph.Graph or networkx.Graph
         cuGraph graph descriptor with connectivity information.
 
-    weight : string
+    weight : string or None
         default to the weights in the graph, if the graph edges do not have a
         weight attribute a default weight of 1 will be used.
 
@@ -126,6 +136,16 @@ def maximum_spanning_tree(
     G_mst : cuGraph.Graph or networkx.Graph
         A graph descriptor with a maximum spanning tree or forest.
         The networkx graph will not have all attributes copied over
+
+    Example
+    -------
+    >>> import cudf, cugraph
+    >>> M = cudf.read_csv('datasets/karate_undirected.csv',
+    ...                     delimiter='\t', dtype=['int32', 'int32'],
+    ...                     header=None)
+    >>> G = cugraph.Graph()
+    >>> G.from_cudf_edgelist(M, source='0', destination='1')
+    >>> MST = cugraph.maximum_spanning_tree(G)
 
     """
 
