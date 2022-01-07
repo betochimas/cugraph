@@ -312,6 +312,7 @@ class NumberMap:
         """
         Given a collection of external vertex ids, return the internal
         vertex ids
+
         Parameters
         ----------
         df: cudf.DataFrame, cudf.Series, dask_cudf.DataFrame, dask_cudf.Series
@@ -321,6 +322,7 @@ class NumberMap:
             This list of 1 or more strings contain the names
             of the columns that uniquely identify an external
             vertex identifier
+
         Returns
         ---------
         vertex_ids : cudf.Series or dask_cudf.Series
@@ -357,6 +359,7 @@ class NumberMap:
         If a series-type input is provided then the series will be in a column
         named '0'. Otherwise the input column names in the DataFrame will be
         preserved.
+
         Parameters
         ----------
         df: cudf.DataFrame, cudf.Series, dask_cudf.DataFrame, dask_cudf.Series
@@ -375,6 +378,7 @@ class NumberMap:
         preserve_order: (optional) boolean
             If True, do extra sorting work to preserve the order
             of the input DataFrame.  Defaults to False.
+
         Returns
         ---------
         df : cudf.DataFrame or dask_cudf.DataFrame
@@ -417,6 +421,7 @@ class NumberMap:
         """
         Given a collection of internal vertex ids, return a DataFrame of
         the external vertex ids
+
         Parameters
         ----------
         df: cudf.DataFrame, cudf.Series, dask_cudf.DataFrame, dask_cudf.Series
@@ -436,6 +441,7 @@ class NumberMap:
         drop: (optional) boolean
             If True the internal column name will be dropped from the
             DataFrame.  Defaults to False.
+
         Returns
         ---------
         df : cudf.DataFrame or dask_cudf.DataFrame
@@ -622,6 +628,7 @@ class NumberMap:
         n-1 with a suffix of _column_name.
         Note that this function does not guarantee order or partitioning in
         multi-GPU mode.
+
         Parameters
         ----------
         df: cudf.DataFrame or dask_cudf.DataFrame
@@ -634,6 +641,7 @@ class NumberMap:
             DataFrame to match the input DataFrame
         get_column_names: (optional) bool
             If True, the unrenumbered column names are returned.
+
         Returns
         ---------
         df : cudf.DataFrame or dask_cudf.DataFrame
@@ -643,12 +651,13 @@ class NumberMap:
         column_names: string or list of strings
             If get_column_names is True, the unrenumbered column names are
             returned.
+
         Examples
         --------
         >>> import cudf, cugraph
-        >>> M = cudf.read_csv('datasets/karate.csv', delimiter=' ',
+        >>> df = cudf.read_csv('datasets/karate.csv', delimiter=' ',
         ...                   dtype=['int32', 'int32', 'float32'], header=None)
-        >>> df, number_map = NumberMap.renumber(df, '0', '1')
+        >>> df, number_map = cugraph.structure.number_map.NumberMap.renumber(df, '0', '1')
         >>> G = cugraph.Graph()
         >>> G.from_cudf_edgelist(df, 'src', 'dst')
         >>> pr = cugraph.pagerank(G, alpha = 0.85, max_iter = 500,

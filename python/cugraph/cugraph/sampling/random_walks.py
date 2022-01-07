@@ -21,7 +21,7 @@ def random_walks(G,
                  max_depth=None,
                  use_padding=False):
     """
-    compute random walks for each nodes in 'start_vertices'
+    Compute random walks for each nodes in 'start_vertices'
 
     parameters
     ----------
@@ -53,6 +53,10 @@ def random_walks(G,
 
     sizes: int
         The path size in case of coalesced paths.
+
+    Examples
+    --------
+    
     """
     if max_depth is None:
         raise TypeError("must specify a 'max_depth'")
