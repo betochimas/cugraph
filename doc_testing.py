@@ -15,7 +15,7 @@ allmodules = ["centrality/", "comms/", "community/", "components/", "cores/",
                 "tree/", "utilities/"]
 """
 
-premodules = ["proto/components/"]
+premodules = ["link_prediction/"]
 
 modules = [relativepath+module for module in premodules]
 
