@@ -15,7 +15,7 @@ allmodules = ["centrality/", "comms/", "community/", "components/", "cores/",
                 "tree/", "utilities/"]
 """
 
-premodules = ["sampling/"]
+premodules = ["proto/components/"]
 
 modules = [relativepath+module for module in premodules]
 
