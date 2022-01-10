@@ -177,7 +177,7 @@ def sssp(G,
 
     Examples
     --------
-    >>> import cugraph, cudf
+    >>> import cugraph, cudf        # FIXME-IMPORT
     >>> M = cudf.read_csv('datasets/karate.csv', delimiter=' ',
     ...                   dtype=['int32', 'int32', 'float32'], header=None)
     >>> G = cugraph.Graph()
@@ -268,11 +268,11 @@ def shortest_path_length(G, source, target=None):
 
     Parameters
     ----------
-    graph : cuGraph.Graph, NetworkX.Graph, or CuPy sparse COO matrix
+    G : cuGraph.Graph, NetworkX.Graph, or CuPy sparse COO matrix
         cuGraph graph descriptor with connectivity information. Edge weights,
         if present, should be single or double precision floating point values.
 
-    source : Dependant on graph type. Index of the source vertex.
+    source : Dependent on graph type. Index of the source vertex.
 
     If graph is an instance of cuGraph.Graph or CuPy sparse COO matrix:
         int
@@ -280,7 +280,7 @@ def shortest_path_length(G, source, target=None):
     If graph is an instance of a NetworkX.Graph:
         str
 
-    target: Dependant on graph type. Vertex to find distance to.
+    target: Dependent on graph type. Vertex to find distance to.
 
     If graph is an instance of cuGraph.Graph or CuPy sparse COO matrix:
         int

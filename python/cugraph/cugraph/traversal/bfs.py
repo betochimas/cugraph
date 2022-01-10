@@ -149,7 +149,7 @@ def bfs(G,
 
     Examples
     --------
-    >>> import cugraph, cudf
+    >>> import cugraph, cudf    # FIXME-REMOVEIMPORT
     >>> M = cudf.read_csv('datasets/karate.csv', delimiter=' ',
     ...                   dtype=['int32', 'int32', 'float32'], header=None)
     >>> G = cugraph.Graph()
@@ -246,7 +246,7 @@ def bfs_edges(G, source, reverse=False, depth_limit=None, sort_neighbors=None):
 
     Examples
     --------
-    >>> import cugraph, cudf
+    >>> import cugraph, cudf        # FIXME-IMPORT
     >>> M = cudf.read_csv('datasets/karate.csv', delimiter=' ',
     ...                   dtype=['int32', 'int32', 'float32'], header=None)
     >>> G = cugraph.Graph()

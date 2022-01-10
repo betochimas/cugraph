@@ -54,7 +54,7 @@ def _get_feasibility(G, sources, components=None, depth_limit=None):
         Estimated memory foot print size in Bytes
     """
 
-    # Fixme not implemented in RMM yet
+    # FIXME not implemented in RMM yet
     # using 96GB upper bound for now
     # mem = get_device_memory_info()
     mem = 9.6e10

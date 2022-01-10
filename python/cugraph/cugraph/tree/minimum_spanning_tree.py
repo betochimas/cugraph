@@ -89,7 +89,7 @@ def minimum_spanning_tree(
 
     Example
     -------
-    >>> import cudf, cugraph
+    >>> import cudf, cugraph        # FIXME-IMPORT
     >>> M = cudf.read_csv('datasets/karate_undirected.csv',
     ...                     delimiter='\t', dtype=['int32', 'int32'],
     ...                     header=None)
@@ -139,13 +139,13 @@ def maximum_spanning_tree(
 
     Example
     -------
-    >>> import cudf, cugraph
+    >>> import cudf, cugraph        # FIXME-IMPORT
     >>> M = cudf.read_csv('datasets/karate_undirected.csv',
     ...                     delimiter='\t', dtype=['int32', 'int32'],
     ...                     header=None)
     >>> G = cugraph.Graph()
     >>> G.from_cudf_edgelist(M, source='0', destination='1')
-    >>> MST = cugraph.maximum_spanning_tree(G)
+    >>> MST = cugraph.maximum_spanning_tree(G, weight=None)
 
     """
 

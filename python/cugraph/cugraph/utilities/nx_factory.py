@@ -125,11 +125,9 @@ def df_score_to_dictionary(df, k, v="vertex"):
     v : str
         the vertex column name. Default is "vertex"
 
-
     Returns
     -------
     dict : Dictionary of vertices and score
-
     """
     df = df.sort_values(by=v)
     return df.to_pandas().set_index(v).to_dict()[k]
@@ -163,6 +161,15 @@ def df_edge_score_to_dictionary(df, k, src="src", dst="dst"):
     Returns
     -------
     dict : Dictionary of vertices and score
+
+    Examples
+    --------
+    >>> import cugraph, cudf    # FIXME-IMPORT
+    >>> M = cudf.read_csv('datasets/karate.csv', delimiter=' ',
+    ...                   dtype=['int32', 'int32', 'float32'], header=None)
+    >>> D = cugraph.utilities.nx_factory.df_edge_score_to_dictionary(M, k='2', src='0', dst='1')
+    >>> D[(31, 33)]
+    1.0
 
     """
     pdf = df.sort_values(by=[src, dst]).to_pandas()

@@ -82,7 +82,7 @@ def get_traversed_path(df, id):
 
     Examples
     --------
-    >>> import cudf, cugraph
+    >>> import cudf, cugraph        # FIXME-IMPORT
     >>> gdf = cudf.read_csv('datasets/karate.csv', delimiter=' ',
     ...                   dtype=['int32', 'int32', 'float32'], header=None)
     >>> G = cugraph.Graph()

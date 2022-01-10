@@ -15,14 +15,14 @@ allmodules = ["centrality/", "comms/", "community/", "components/", "cores/",
                 "tree/", "utilities/"]
 """
 
-premodules = ["link_prediction/"]
+premodules = ["traversal/"]
 
 modules = [relativepath+module for module in premodules]
 
 for module in modules:
     #print(module)
     modulefiles = glob.glob(module + "[!_]**.py", recursive=True)
-    #print(modulefiles)
+    print(modulefiles)
     for file in modulefiles:
         print("Testing " + file)
         print(doctest.testfile(file))
