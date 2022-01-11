@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 import cugraph
+import cudf
 
 
 def _name_in_all(parent, name, member):
@@ -58,7 +59,7 @@ class TestDoctests:
     def test_docstring(self, docstring):
         optionflags = doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE
         runner = doctest.DocTestRunner(optionflags=optionflags)
-        globs = dict(cugraph=cugraph, np=np,)
+        globs = dict(cugraph=cugraph, np=np, cudf=cudf,)
         docstring.globs = globs
         runner.run(docstring)
         results = runner.summarize()
