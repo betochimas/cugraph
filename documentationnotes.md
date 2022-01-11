@@ -16,7 +16,44 @@ Helper functions need not have a complete documentation, though some sort of des
 
 ### katz_centrality.py
 
-- `katz_centrality` example
+- `katz_centrality` example requires initializing DASK cluster, but link is broken and so doc example is commented
+
+## dask/common
+
+### input_utils.py
+
+
+
+### mg_utils.py
+
+- FIXME before importing from cugraph.comms
+- FIXME before `get_client`
+- FIXME in `get_visible_devices` about making a variable assumption
+
+### part_utils.py
+
+- FIXME in `_extract_partitions` "persist data to the same worker when batch_enabled=True"
+- TODO in `_extract_partitions` "ravel() is causing strange behavior w/ delayed Arrays which are not yet backed by futures. Need to investigate this behavior."
+
+### read_utils.py
+
+- `get_chunkside` missing information about arguments and returns
+
+## dask/community
+
+## dask/components
+
+## dask/link_analysis
+
+## dask/structure
+
+## dask/traversal
+
+### bfs.py
+
+### sssp.py
+
+- `sssp` example requires initializing DASK cluster, but link is broken and so doc example is commented
 
 ## generators
 

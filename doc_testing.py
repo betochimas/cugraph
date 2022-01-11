@@ -27,5 +27,5 @@ for module in modules:
     print(modulefiles)
     for file in modulefiles:
         print("Testing " + file)
-        #print(doctest.testfile(file))
+        print(doctest.testfile(file))
 
