@@ -33,7 +33,7 @@ def pagerank(
 
     Parameters
     ----------
-    graph : cugraph.Graph or networkx.Graph
+    G : cugraph.Graph or networkx.Graph
         cuGraph graph descriptor, should contain the connectivity information
         as an edge list.
         The transposed adjacency list will be computed if not already present.
@@ -55,7 +55,7 @@ def pagerank(
         solver reaches the convergence tolerance.
         If this value is lower or equal to 0 cuGraph will use the default
         value, which is 100.
-    tolerance : float
+    tol : float
         Set the tolerance the approximation, this parameter should be a small
         magnitude value.
         The lower the tolerance the better the approximation. If this value is
@@ -91,11 +91,13 @@ def pagerank(
 
     Examples
     --------
+    >>> import cugraph, cudf        # FIXME-IMPORT 
     >>> gdf = cudf.read_csv('datasets/karate.csv', delimiter=' ',
-    >>>                   dtype=['int32', 'int32', 'float32'], header=None)
+    ...                   dtype=['int32', 'int32', 'float32'], header=None)
     >>> G = cugraph.Graph()
     >>> G.from_cudf_edgelist(gdf, source='0', destination='1')
     >>> pr = cugraph.pagerank(G, alpha = 0.85, max_iter = 500, tol = 1.0e-05)
+
     """
 
     G, isNx = ensure_cugraph_obj_for_nx(G, weight)

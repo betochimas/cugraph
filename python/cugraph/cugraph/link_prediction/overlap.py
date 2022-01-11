@@ -56,7 +56,7 @@ def overlap(input_graph, vertex_pair=None):
 
     Parameters
     ----------
-    graph : cugraph.Graph
+    input_graph : cugraph.Graph
         cuGraph Graph instance, should contain the connectivity information
         as an edge list (edge weights are not used for this algorithm). The
         adjacency list will be computed if not already present.
@@ -84,11 +84,13 @@ def overlap(input_graph, vertex_pair=None):
 
     Examples
     --------
+    >>> import cugraph, cudf        # FIXME-IMPORT
     >>> gdf = cudf.read_csv('datasets/karate.csv', delimiter=' ',
-    >>>                   dtype=['int32', 'int32', 'float32'], header=None)
+    ...                   dtype=['int32', 'int32', 'float32'], header=None)
     >>> G = cugraph.Graph()
     >>> G.from_cudf_edgelist(gdf, source='0', destination='1')
     >>> df = cugraph.overlap(G)
+    
     """
 
     if type(vertex_pair) == cudf.DataFrame:

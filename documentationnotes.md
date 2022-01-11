@@ -10,8 +10,60 @@ Key functions should have a complete documentation, which includes:
 - at least 1 example, with an example output if possible
 Helper functions need not have a complete documentation, though some sort of description is still necessary
 
-## centrality, comms, community, components, cores, dask, generators, internals, layout, linear_assignment, link_analysis, proto, sampling, structure
+## centrality, comms, community, components, cores, dask, internals, structure
 
+## generators
+
+### rmat.py
+
+- In general, the method signatures all have one argument per line
+- `rmat` return value description is incomplete
+
+## layout
+
+### force_atlas2.py
+
+- `force_atlas2` missing example(s)
+
+## linear_assignment
+
+### lap.py
+
+- `hungarian` example fails because dataset bipartite is not included within datasets/, and workers is not defined
+- `dense_hungarian` missing example, this is what the FIXME is referring to
+
+## link_analysis
+
+### hits.py
+
+### pagerank.py
+
+## link_prediction
+
+### jaccard.py
+
+- `jaccard_coefficient` could use more detailed description
+
+### overlap.py
+
+- `overlap_coefficient` could use more detailed description
+
+### sorensen.py
+
+- `sorensen_coefficient` missing description
+
+### wjaccard.py
+
+### woverlap.py
+
+### wsorensen.py
+
+## sampling
+
+### random_walks.py
+
+- `random_walks` description is incomplete, parameter description includes deprecated class (DiGraph), FIXME w.r.t. Nx return types
+- `rw_path` missing example(s)
 
 ## traversal
 
@@ -39,36 +91,36 @@ Helper functions need not have a complete documentation, though some sort of des
 
 
 This example results in cugraph.maximum_spanning_tree outputting a MaxST (haven't verified its correctness)
->>> import cudf, cugraph
->>> M = cudf.read_csv('datasets/karate_undirected.csv',
-...                     delimiter='\t', dtype=['int32', 'int32'],
-...                     header=None)
->>> G = cugraph.Graph()
->>> G.from_cudf_edgelist(M, source='0', destination='1')
->>> cugraph.minimum_spanning_tree(G)
->>> cugraph.maximum_spanning_tree(G, weight=None)
+- import cudf, cugraph
+- M = cudf.read_csv('datasets/karate_undirected.csv',
+                     delimiter='\t', dtype=['int32', 'int32'],
+                     header=None)
+- G = cugraph.Graph()
+- G.from_cudf_edgelist(M, source='0', destination='1')
+- cugraph.minimum_spanning_tree(G)
+- cugraph.maximum_spanning_tree(G, weight=None)
 
 This examples results in cugraph.maximum_spanning_tree erroring with message:
 AttributeError: 'NoneType' object has no attribute 'weights'
->>> import cudf, cugraph
->>> M = cudf.read_csv('datasets/karate_undirected.csv',
-...                     delimiter='\t', dtype=['int32', 'int32'],
-...                     header=None)
->>> G = cugraph.Graph()
->>> G.from_cudf_edgelist(M, source='0', destination='1')
->>> cugraph.maximum_spanning_tree(G, weight=None)
+- import cudf, cugraph
+- M = cudf.read_csv('datasets/karate_undirected.csv',
+                     delimiter='\t', dtype=['int32', 'int32'],
+                     header=None)
+- G = cugraph.Graph()
+- G.from_cudf_edgelist(M, source='0', destination='1')
+- cugraph.maximum_spanning_tree(G, weight=None)
 
 This examples results in cugraph.maximum_spanning_tree erroring with message:
 RuntimeError: RAFT failure at file=/opt/conda/envs/rapids/include/raft/sparse/mst/detail/mst_solver_inl.cuh line=173: Number of edges found by MST is invalid. This may be due to loss in precision. Try increasing precision of weights.
 Obtained 28 stack frames
->>> import cudf, cugraph
->>> M = cudf.read_csv('datasets/karate_undirected.csv',
-...                     delimiter='\t', dtype=['int32', 'int32'],
-...                     header=None)
->>> G = cugraph.Graph()
->>> G.from_cudf_edgelist(M, source='0', destination='1')
->>> cugraph.minimum_spanning_tree(G)
->>> cugraph.maximum_spanning_tree(G)
+- import cudf, cugraph
+- M = cudf.read_csv('datasets/karate_undirected.csv',
+                     delimiter='\t', dtype=['int32', 'int32'],
+                     header=None)
+- G = cugraph.Graph()
+- G.from_cudf_edgelist(M, source='0', destination='1')
+- cugraph.minimum_spanning_tree(G)
+- cugraph.maximum_spanning_tree(G)
 
 
 ## utilities - these methods do not show up on docs.rapids.ai

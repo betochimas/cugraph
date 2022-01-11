@@ -62,3 +62,20 @@
  10-01-2022 17:30:04:78 [pid=2076 tid=2076] NOTICE  cufio-drv:636 running in compatible mode
  10-01-2022 17:32:12:918 [pid=2415 tid=2415] NOTICE  cufio-drv:636 running in compatible mode
  10-01-2022 17:51:15:674 [pid=2638 tid=2638] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 22:10:12:98 [pid=335 tid=335] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 22:29:04:287 [pid=558 tid=558] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 22:42:03:693 [pid=786 tid=786] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 22:42:46:755 [pid=1013 tid=1013] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 22:43:07:163 [pid=1272 tid=1272] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 22:50:33:301 [pid=1531 tid=1531] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 22:52:03:813 [pid=1806 tid=1806] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 22:52:29:188 [pid=2081 tid=2081] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 22:59:02:896 [pid=2388 tid=2388] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 23:05:27:112 [pid=2727 tid=2727] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 23:05:48:913 [pid=3066 tid=3066] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 23:07:34:895 [pid=3405 tid=3405] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 23:08:06:639 [pid=3760 tid=3760] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 23:08:25:686 [pid=4115 tid=4115] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 23:09:54:507 [pid=4680 tid=4680] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 23:16:23:193 [pid=4907 tid=4907] NOTICE  cufio-drv:636 running in compatible mode
+ 10-01-2022 23:17:27:251 [pid=5150 tid=5150] NOTICE  cufio-drv:636 running in compatible mode

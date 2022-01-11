@@ -34,7 +34,7 @@ def hits(G, max_iter=100, tol=1.0e-5, nstart=None, normalized=True):
 
     Parameters
     ----------
-    graph : cugraph.Graph
+    G : cugraph.Graph
         cuGraph graph descriptor, should contain the connectivity information
         as an edge list (edge weights are not used for this algorithm).
         The adjacency list will be computed if not already present.
@@ -43,7 +43,7 @@ def hits(G, max_iter=100, tol=1.0e-5, nstart=None, normalized=True):
         The gunrock implementation does not currently support tolerance,
         so this will in fact be the number of iterations the HITS algorithm
         executes.
-    tolerance : float
+    tol : float
         Set the tolerance the approximation, this parameter should be a small
         magnitude value.  This parameter is not currently supported.
     nstart : cudf.Dataframe
@@ -68,11 +68,13 @@ def hits(G, max_iter=100, tol=1.0e-5, nstart=None, normalized=True):
 
     Examples
     --------
+    >>> import cugraph, cudf        # FIXME-IMPORT
     >>> gdf = cudf.read_csv('datasets/karate.csv', delimiter=' ',
-    >>>                   dtype=['int32', 'int32', 'float32'], header=None)
+    ...                   dtype=['int32', 'int32', 'float32'], header=None)
     >>> G = cugraph.Graph()
     >>> G.from_cudf_edgelist(gdf, source='0', destination='1')
     >>> hits = cugraph.hits(G, max_iter = 50)
+
     """
 
     G, isNx = ensure_cugraph_obj_for_nx(G)

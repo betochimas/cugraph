@@ -15,7 +15,7 @@ allmodules = ["centrality/", "comms/", "community/", "components/", "cores/",
                 "tree/", "utilities/"]
 """
 
-premodules = ["traversal/"]
+premodules = ["generators/", "layout/", "linear_assignment/"]
 
 modules = [relativepath+module for module in premodules]
 

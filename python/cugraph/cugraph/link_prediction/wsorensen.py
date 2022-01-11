@@ -26,7 +26,7 @@ def sorensen_w(input_graph, weights, vertex_pair=None):
 
     Parameters
     ----------
-    graph : cugraph.Graph
+    input_graph : cugraph.Graph
         cuGraph Graph instance, should contain the connectivity information
         as an edge list (edge weights are not used for this algorithm). The
         adjacency list will be computed if not already present.
@@ -64,8 +64,9 @@ def sorensen_w(input_graph, weights, vertex_pair=None):
 
     Examples
     --------
+    >>> import cugraph, cudf, random    # FIXME-REMOVEIMPORT
     >>> M = cudf.read_csv('datasets/karate.csv', delimiter=' ',
-    >>>                   dtype=['int32', 'int32', 'float32'], header=None)
+    ...                   dtype=['int32', 'int32', 'float32'], header=None)
     >>> G = cugraph.Graph()
     >>> G.from_cudf_edgelist(M, source='0', destination='1')
     >>> # Create a dataframe containing the vertices with their
@@ -79,8 +80,9 @@ def sorensen_w(input_graph, weights, vertex_pair=None):
     >>> weights.reset_index(inplace=True, drop=True)
     >>> # Create a weight column with random weights
     >>> weights['weight'] = [random.random() for w in range(
-    >>>                      len(weights['vertex']))]
+    ...                      len(weights['vertex']))]
     >>> df = cugraph.sorensen_w(G, weights)
+
     """
     if type(input_graph) is not Graph:
         raise TypeError("input graph must a Graph")
