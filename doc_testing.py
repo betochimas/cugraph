@@ -15,7 +15,9 @@ allmodules = ["centrality/", "comms/", "community/", "components/", "cores/",
                 "tree/", "utilities/"]
 """
 
-premodules = ["generators/", "layout/", "linear_assignment/"]
+premodules = ["dask/centrality/", "dask/common/", "dask/community/", 
+    "dask/components/", "dask/link_analysis/", "dask/structure/", 
+    "dask/traversal/"]
 
 modules = [relativepath+module for module in premodules]
 
@@ -25,5 +27,5 @@ for module in modules:
     print(modulefiles)
     for file in modulefiles:
         print("Testing " + file)
-        print(doctest.testfile(file))
+        #print(doctest.testfile(file))
 

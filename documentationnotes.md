@@ -12,6 +12,12 @@ Helper functions need not have a complete documentation, though some sort of des
 
 ## centrality, comms, community, components, cores, dask, internals, structure
 
+## dask/centrality
+
+### katz_centrality.py
+
+- `katz_centrality` example
+
 ## generators
 
 ### rmat.py
