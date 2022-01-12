@@ -149,7 +149,7 @@ def bfs(G,
 
     Examples
     --------
-    >>> import cugraph, cudf    # FIXME-IMPORT
+    >>> import cugraph, cudf
     >>> M = cudf.read_csv('datasets/karate.csv', delimiter=' ',
     ...                   dtype=['int32', 'int32', 'float32'], header=None)
     >>> G = cugraph.Graph()
