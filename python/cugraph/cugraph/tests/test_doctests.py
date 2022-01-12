@@ -20,23 +20,19 @@ def _is_public_name(parent, name, member):
 def _find_docstrings_in_obj(finder, obj, criteria=None):
     for docstring in finder.find(obj):
         if docstring.examples:
-            print("SUCCESS!")
             yield docstring
     for name, member in inspect.getmembers(obj):
         # Filter out non-matching objects with criteria
         if criteria is not None and not criteria(obj, name, member):
             continue
-        print(name)
         # Recurse over the public API of modules (objects defined in __all__)
         if inspect.ismodule(member):
-            print(1)
             yield from _find_docstrings_in_obj(
                 finder, member, criteria=_name_in_all
             )
         # Recurse over the public API of classes (attributes not prefixed with
         # an underscore)
         if inspect.isclass(member):
-            print(2)
             yield from _find_docstrings_in_obj(
                 finder, member, criteria=_is_public_name
             )
@@ -66,6 +62,6 @@ class TestDoctests:
         globs = dict(cugraph=cugraph, np=np, cudf=cudf,)
         docstring.globs = globs
         runner.run(docstring)
-        #results = runner.summarize()
+        results = runner.summarize()
         #if results.failed:
         #    raise AssertionError(results)
