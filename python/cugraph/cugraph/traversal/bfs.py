@@ -149,19 +149,8 @@ def bfs(G,
 
     Examples
     --------
-    >>> import cugraph, cudf, os        # FIXME-IMPORT
-    >>> #os.getcwd()
-    >>> #os.listdir()
-    >>> os.chdir("../")
-    >>> #os.getcwd()
-    >>> #os.listdir()
-    >>> os.chdir("../../../")
-    >>> #os.getcwd()
-    >>> #os.listdir()
-    >>> os.chdir("dylanc/cugraph/datasets/")
-    >>> os.listdir()
-    >>> M = cudf.read_csv('karate.csv', delimiter=' ',
-    ...                   dtype=['int32', 'int32', 'float32'], header=None)
+    >>> M = cudf.read_csv(datasets / 'karate.csv', delimiter=' ',
+    ...                  dtype=['int32', 'int32', 'float32'], header=None)
     >>> G = cugraph.Graph()
     >>> G.from_cudf_edgelist(M, source='0', destination='1')
     >>> df = cugraph.bfs(G, 0)
@@ -256,8 +245,7 @@ def bfs_edges(G, source, reverse=False, depth_limit=None, sort_neighbors=None):
 
     Examples
     --------
-    >>> import cugraph, cudf        # FIXME-IMPORT
-    >>> M = cudf.read_csv('../../../../datasets/karate.csv', delimiter=' ',
+    >>> M = cudf.read_csv(datasets / "karate.csv", delimiter=' ',
     ...                   dtype=['int32', 'int32', 'float32'], header=None)
     >>> G = cugraph.Graph()
     >>> G.from_cudf_edgelist(M, source='0', destination='1')
