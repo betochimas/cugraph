@@ -15,9 +15,7 @@ allmodules = ["centrality/", "comms/", "community/", "components/", "cores/",
                 "tree/", "utilities/"]
 """
 
-premodules = ["dask/centrality/", "dask/common/", "dask/community/", 
-    "dask/components/", "dask/link_analysis/", "dask/structure/", 
-    "dask/traversal/"]
+premodules = ["traversal/"]
 
 modules = [relativepath+module for module in premodules]
 

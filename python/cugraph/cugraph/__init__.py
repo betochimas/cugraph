@@ -143,6 +143,7 @@ __all__ = [
         "find_bicliques",
         "force_atlas2",
         "from_adjlist",
+        "from_cudf_adjlist",
         "from_cudf_edgelist",
         "from_edgelist",
         "from_numpy_array",
