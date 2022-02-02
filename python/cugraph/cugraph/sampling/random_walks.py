@@ -125,3 +125,10 @@ def rw_path(num_paths, sizes):
         edge weight sizes for each path.
     """
     return random_walks_wrapper.rw_path_retrieval(num_paths, sizes)
+
+
+def node2vec():
+    """
+
+    """
+    return random_walks_wrapper.node2vec()
