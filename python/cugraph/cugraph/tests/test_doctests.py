@@ -27,7 +27,8 @@ import cugraph
 import cudf
 
 
-modules_to_skip = ["dask", "proto", "raft"]
+#modules_to_skip = ["dask", "proto", "raft"]
+modules_to_skip = []
 datasets = pathlib.Path(cugraph.__path__[0]).parent.parent.parent / "datasets"
 
 
@@ -51,7 +52,8 @@ def _find_modules_in_obj(finder, obj, criteria=None):
     for name, member in inspect.getmembers(obj):
         if criteria is not None and not criteria(name):
             continue
-        if inspect.ismodule(member) and (member not in modules_to_skip):
+        #if inspect.ismodule(member) and (member not in modules_to_skip):
+        if inspect.ismodule(member):
             yield from _find_doctests_in_obj(finder,
                                              member, _is_public_name)
 
