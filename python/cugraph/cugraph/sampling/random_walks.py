@@ -121,7 +121,7 @@ def rw_path(num_paths, sizes):
     Returns
     -------
     path_data : cudf.DataFrame
-        Dataframe containing vetex path offsets, edge weight offsets and
+        Dataframe containing vertex path offsets, edge weight offsets and
         edge weight sizes for each path.
     """
     return random_walks_wrapper.rw_path_retrieval(num_paths, sizes)
@@ -129,6 +129,14 @@ def rw_path(num_paths, sizes):
 
 def node2vec():
     """
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    dfr : cudf.DataFrame
+        Dataframe containing
 
     """
     return random_walks_wrapper.node2vec()

@@ -164,3 +164,17 @@ cdef extern from "cugraph_c/algorithms.h":
             cugraph_paths_result_t** result,
             cugraph_error_t** error
         )
+
+    ###########################################################################
+    # node2vec
+    cdef cugraph_error_code_t \
+        cugraph_node2vec(
+            const cugraph_resource_handle_t* handle,
+            cugraph_graph_t* graph,
+            size_t source,
+            double cutoff,
+            bool_t compute_predecessors,
+            bool_t do_expensive_check,
+            cugraph_paths_result_t** result,
+            cugraph_error_t** error
+        )
