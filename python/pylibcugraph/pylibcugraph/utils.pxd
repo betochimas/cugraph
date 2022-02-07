@@ -16,6 +16,10 @@
 
 from pylibcugraph._cugraph_c.cugraph_api cimport (
     data_type_id_t,
+    cugraph_resource_handle_t,
+)
+from pylibcugraph._cugraph_c.array cimport (
+    cugraph_type_erased_device_array_view_t,
 )
 from pylibcugraph._cugraph_c.error cimport (
     cugraph_error_code_t,
