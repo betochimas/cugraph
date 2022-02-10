@@ -29,6 +29,7 @@ Adding Data
    Graph.add_internal_vertex_id
    Graph.add_nodes_from
    Graph.clear
+   Graph.unrenumber
 
 Checks
 ------
@@ -73,11 +74,44 @@ Conversion from Other Formats
    cugraph.structure.convert_matrix.to_numpy_matrix
    cugraph.structure.convert_matrix.to_pandas_adjacency
    cugraph.structure.convert_matrix.to_pandas_edgelist
+   cugraph.structure.hypergraph.hypergraph
 
 Other
 -----------------------------
 .. autosummary::
    :toctree: api/
 
-   Graph.unrenumber
-   cugraph.structure.hypergraph.hypergraph
+   
+
+Graph Implementation
+-----------------------------
+.. autosummary::
+   :toctree: api/
+
+   cugraph.structure.graph_implementation.simpleGraphImpl.view_edge_list
+   cugraph.structure.graph_implementation.simpleGraphImpl.delete_edge_list
+   cugraph.structure.graph_implementation.simpleGraphImpl.view_adj_list
+   cugraph.structure.graph_implementation.simpleGraphImpl.view_transposed_adj_list
+   cugraph.structure.graph_implementation.simpleGraphImpl.delete_adj_list
+
+   cugraph.structure.graph_implementation.simpleGraphImpl.enable_batch
+   cugraph.structure.graph_implementation.simpleGraphImpl.batch_adjlists
+   cugraph.structure.graph_implementation.simpleGraphImpl.batch_edgelists
+   cugraph.structure.graph_implementation.simpleGraphImpl.batch_enabled
+   cugraph.structure.graph_implementation.simpleGraphImpl.batch_transposed_adjlists
+
+   cugraph.structure.graph_implementation.simpleGraphImpl.get_two_hop_neighbors
+   cugraph.structure.graph_implementation.simpleGraphImpl.number_of_vertices
+   cugraph.structure.graph_implementation.simpleGraphImpl.number_of_nodes
+   cugraph.structure.graph_implementation.simpleGraphImpl.number_of_edges
+   cugraph.structure.graph_implementation.simpleGraphImpl.in_degree
+   cugraph.structure.graph_implementation.simpleGraphImpl.out_degree
+   cugraph.structure.graph_implementation.simpleGraphImpl.degree
+   cugraph.structure.graph_implementation.simpleGraphImpl.degrees
+   cugraph.structure.graph_implementation.simpleGraphImpl.has_edge
+   cugraph.structure.graph_implementation.simpleGraphImpl.has_node
+   cugraph.structure.graph_implementation.simpleGraphImpl.has_self_loop
+   cugraph.structure.graph_implementation.simpleGraphImpl.edges
+   cugraph.structure.graph_implementation.simpleGraphImpl.nodes
+   cugraph.structure.graph_implementation.simpleGraphImpl.neighbors
+   cugraph.structure.graph_implementation.simpleGraphImpl.vertex_column_size

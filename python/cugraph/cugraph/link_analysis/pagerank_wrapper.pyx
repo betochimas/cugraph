@@ -28,6 +28,20 @@ import numpy as np
 def pagerank(input_graph, alpha=0.85, personalization=None, max_iter=100, tol=1.0e-5, nstart=None):
     """
     Call pagerank
+
+    Parameters
+    ----------
+    input_graph : 
+
+    alpha :
+
+    personalization:
+
+    max_iter :
+
+    tol : 
+
+    nstart :
     """
 
     cdef unique_ptr[handle_t] handle_ptr
