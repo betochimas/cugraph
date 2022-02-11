@@ -11,5 +11,8 @@ Methods
 .. autosummary::
    :toctree: api/
 
-   pylibcugraph.components.strongly_connected_components
-   pylibcugraph.components.weakly_connected_components
+   pylibcugraph.strongly_connected_components
+   pylibcugraph.weakly_connected_components
+   pylibcugraph.experimental.EXPERIMENTAL__pagerank
+   pylibcugraph.experimental.EXPERIMENTAL__ResourceHandle
+   pylibcugraph.experimental.EXPERIMENTAL__SGGraph
