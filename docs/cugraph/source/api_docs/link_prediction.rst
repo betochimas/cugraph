@@ -20,7 +20,17 @@ Overlap Coefficient
 .. autosummary::
    :toctree: api/
 
-   cugraph.link_prediction.overlap.overlap
-   cugraph.link_prediction.overlap.overlap_coefficient
-   cugraph.link_prediction.woverlap.overlap_w
+   cugraph.overlap
+   cugraph.overlap_coefficient
+   cugraph.overlap_w
+
+
+Sorensen Coefficient
+--------------------
+.. autosummary::
+   :toctree: api/
+
+   cugraph.sorensen
+   cugraph.sorensen_coefficient
+   cugraph.sorensen_w
 

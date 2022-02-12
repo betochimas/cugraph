@@ -328,15 +328,18 @@ class NumberMap:
         """
         Given a collection of external vertex ids, return the internal
         vertex ids
+
         Parameters
         ----------
         df: cudf.DataFrame, cudf.Series, dask_cudf.DataFrame, dask_cudf.Series
             Contains a list of external vertex identifiers that will be
             converted into internal vertex identifiers
+
         col_names: (optional) list of strings
             This list of 1 or more strings contain the names
             of the columns that uniquely identify an external
             vertex identifier
+
         Returns
         ---------
         vertex_ids : cudf.Series or dask_cudf.Series
@@ -373,24 +376,30 @@ class NumberMap:
         If a series-type input is provided then the series will be in a column
         named '0'. Otherwise the input column names in the DataFrame will be
         preserved.
+
         Parameters
         ----------
         df: cudf.DataFrame, cudf.Series, dask_cudf.DataFrame, dask_cudf.Series
             Contains a list of external vertex identifiers that will be
             converted into internal vertex identifiers
+
         id_column_name: (optional) string
             The name to be applied to the column containing the id
             (defaults to 'id')
+
         col_names: (optional) list of strings
             This list of 1 or more strings contain the names
             of the columns that uniquely identify an external
             vertex identifier
+
         drop: (optional) boolean
             If True, drop the column names specified in col_names from
             the returned DataFrame.  Defaults to False.
+
         preserve_order: (optional) boolean
             If True, do extra sorting work to preserve the order
             of the input DataFrame.  Defaults to False.
+
         Returns
         ---------
         df : cudf.DataFrame or dask_cudf.DataFrame
@@ -443,16 +452,20 @@ class NumberMap:
             in a column labeled 'id'.  If df is a dataframe type object
             then internal_column_name should identify which column corresponds
             the the internal vertex id that should be converted
+
         internal_column_name: (optional) string
             Name of the column containing the internal vertex id.
             If df is a series then this parameter is ignored.  If df is
             a DataFrame this parameter is required.
+
         external_column_names: (optional) string or list of strings
             Name of the columns that define an external vertex id.
             If not specified, columns will be labeled '0', '1,', ..., 'n-1'
+
         drop: (optional) boolean
             If True the internal column name will be dropped from the
             DataFrame.  Defaults to False.
+
         Returns
         ---------
         df : cudf.DataFrame or dask_cudf.DataFrame
@@ -656,6 +669,7 @@ class NumberMap:
         n-1 with a suffix of _column_name.
         Note that this function does not guarantee order or partitioning in
         multi-GPU mode.
+
         Parameters
         ----------
         df: cudf.DataFrame or dask_cudf.DataFrame

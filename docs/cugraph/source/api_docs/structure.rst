@@ -53,9 +53,9 @@ Symmetrize
 .. autosummary::
    :toctree: api/
 
-   cugraph.structure.symmetrize.symmetrize
-   cugraph.structure.symmetrize.symmetrize_ddf
-   cugraph.structure.symmetrize.symmetrize_df
+   cugraph.symmetrize
+   cugraph.symmetrize_ddf
+   cugraph.symmetrize_df
 
 
 Conversion from Other Formats
@@ -63,55 +63,23 @@ Conversion from Other Formats
 .. autosummary::
    :toctree: api/
 
-   cugraph.structure.convert_matrix.from_adjlist
-   cugraph.structure.convert_matrix.from_cudf_edgelist
-   cugraph.structure.convert_matrix.from_edgelist
-   cugraph.structure.convert_matrix.from_numpy_array
-   cugraph.structure.convert_matrix.from_numpy_matrix
-   cugraph.structure.convert_matrix.from_pandas_adjacency
-   cugraph.structure.convert_matrix.from_pandas_edgelist
-   cugraph.structure.convert_matrix.to_numpy_array
-   cugraph.structure.convert_matrix.to_numpy_matrix
-   cugraph.structure.convert_matrix.to_pandas_adjacency
-   cugraph.structure.convert_matrix.to_pandas_edgelist
-   cugraph.structure.hypergraph.hypergraph
+   cugraph.from_adjlist
+   cugraph.from_cudf_edgelist
+   cugraph.from_edgelist
+   cugraph.from_numpy_array
+   cugraph.from_numpy_matrix
+   cugraph.from_pandas_adjacency
+   cugraph.from_pandas_edgelist
+   cugraph.to_numpy_array
+   cugraph.to_numpy_matrix
+   cugraph.to_pandas_adjacency
+   cugraph.to_pandas_edgelist
 
 Other
 -----------------------------
 .. autosummary::
    :toctree: api/
 
-   
-
-Graph Implementation
------------------------------
-.. autosummary::
-   :toctree: api/
-
-   cugraph.structure.graph_implementation.simpleGraphImpl.view_edge_list
-   cugraph.structure.graph_implementation.simpleGraphImpl.delete_edge_list
-   cugraph.structure.graph_implementation.simpleGraphImpl.view_adj_list
-   cugraph.structure.graph_implementation.simpleGraphImpl.view_transposed_adj_list
-   cugraph.structure.graph_implementation.simpleGraphImpl.delete_adj_list
-
-   cugraph.structure.graph_implementation.simpleGraphImpl.enable_batch
-   cugraph.structure.graph_implementation.simpleGraphImpl.batch_adjlists
-   cugraph.structure.graph_implementation.simpleGraphImpl.batch_edgelists
-   cugraph.structure.graph_implementation.simpleGraphImpl.batch_enabled
-   cugraph.structure.graph_implementation.simpleGraphImpl.batch_transposed_adjlists
-
-   cugraph.structure.graph_implementation.simpleGraphImpl.get_two_hop_neighbors
-   cugraph.structure.graph_implementation.simpleGraphImpl.number_of_vertices
-   cugraph.structure.graph_implementation.simpleGraphImpl.number_of_nodes
-   cugraph.structure.graph_implementation.simpleGraphImpl.number_of_edges
-   cugraph.structure.graph_implementation.simpleGraphImpl.in_degree
-   cugraph.structure.graph_implementation.simpleGraphImpl.out_degree
-   cugraph.structure.graph_implementation.simpleGraphImpl.degree
-   cugraph.structure.graph_implementation.simpleGraphImpl.degrees
-   cugraph.structure.graph_implementation.simpleGraphImpl.has_edge
-   cugraph.structure.graph_implementation.simpleGraphImpl.has_node
-   cugraph.structure.graph_implementation.simpleGraphImpl.has_self_loop
-   cugraph.structure.graph_implementation.simpleGraphImpl.edges
-   cugraph.structure.graph_implementation.simpleGraphImpl.nodes
-   cugraph.structure.graph_implementation.simpleGraphImpl.neighbors
-   cugraph.structure.graph_implementation.simpleGraphImpl.vertex_column_size
+   cugraph.hypergraph
+   cugraph.structure.shuffle
+   cugraph.structure.NumberMap
