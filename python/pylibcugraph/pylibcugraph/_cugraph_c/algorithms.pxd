@@ -164,7 +164,7 @@ cdef extern from "cugraph_c/algorithms.h":
             cugraph_paths_result_t** result,
             cugraph_error_t** error
         )
-    
+
     ###########################################################################
     # random_walks
     ctypedef struct cugraph_random_walk_result_t:
