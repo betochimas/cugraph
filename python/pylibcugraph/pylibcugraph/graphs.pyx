@@ -33,16 +33,12 @@ from pylibcugraph._cugraph_c.array cimport (
 from pylibcugraph._cugraph_c.graph cimport (
     cugraph_graph_t,
     cugraph_sg_graph_create,
-    cugraph_graph_properties_t,
-    cugraph_sg_graph_free,
-)
-# FIXME: Verify this holds
-from pylibcugraph._cugraph_c.graph cimport (
-    cugraph_graph_t,
     cugraph_mg_graph_create,
     cugraph_graph_properties_t,
+    cugraph_sg_graph_free,
     cugraph_mg_graph_free,
 )
+# FIXME: Verify this holds
 from pylibcugraph.resource_handle cimport (
     EXPERIMENTAL__ResourceHandle,
 )
