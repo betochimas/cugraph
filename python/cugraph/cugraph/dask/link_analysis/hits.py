@@ -11,12 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pylibcugraph
-import cudf
-from cugraph.utilities import ensure_cugraph_obj_for_nx
+from dask.distributed import wait, default_client
+from cugraph.dask.common.input_utils import (get_distributed_data,
+                                             get_vertex_partition_offsets)
+from pylibcugraph.experimental import hits as mg_hits
+import cugraph.comms.comms as Comms
+import dask_cudf
+# from cugraph.utilities import ensure_cugraph_obj_for_nx
 
 
-def call_hits(SID,
+def call_hits(sID,
               data,
               src_col_name,
               dst_col_name,
@@ -28,11 +32,40 @@ def call_hits(SID,
               tol,
               nstart,
               normalized):
-    return 0
+    wid = Comms.get_worker_id(sID)
+    handle = Comms.get_handle(sID)
+    local_size = len(aggregate_segment_offsets) // Comms.get_n_workers(sID)
+    segment_offsets = \
+        aggregate_segment_offsets[local_size * wid: local_size * (wid + 1)]
+    # NOTE: This will require updating once the C HITS api is ready
+    return mg_hits(data[0],
+                   src_col_name,
+                   dst_col_name,
+                   num_verts,
+                   num_edges,
+                   vertex_partition_offsets,
+                   wid,
+                   handle,
+                   segment_offsets,
+                   max_iter,
+                   tol,
+                   nstart,
+                   normalized)
+    """
+    return mg_hits(handle,
+                graph,
+                max_iter,
+                tol,
+                nstart,
+                normalized,
+                do_expensive_check)
+    """
+
 
 def hits(input_graph, max_iter=100, tol=1.0e-5, nstart=None, normalized=True):
     """
-    Compute HITS hubs and authorities values for each vertex using multiple GPUs.
+    Compute HITS hubs and authorities values for each vertex using multiple
+    GPUs.
 
     Parameters
     ----------
@@ -63,3 +96,42 @@ def hits(input_graph, max_iter=100, tol=1.0e-5, nstart=None, normalized=True):
         ddf['authorities'] : dask_cudf.Series
             Contains the authorities score
     """
+    # note: signature for pylib HITS is
+    # hits(handle, graph, max_iter, tol, nstart, normalized, do_exp_check),
+    # compared to node2vec's, which is/was
+    # node2vec(handle, graph, src_array, max_depth, compress_result, p, q)
+    nstart = None
+
+    client = default_client()
+
+    input_graph.compute_renumber_edge_list(transposed=True)
+    ddf = input_graph.edgelist.edgelist_df
+    vertex_partition_offsets = get_vertex_partition_offsets(input_graph)
+    num_verts = vertex_partition_offsets.iloc[-1]
+    num_edges = len(ddf)
+    data = get_distributed_data(ddf)
+
+    src_col_name = input_graph.renumber_map.renumbered_src_col_name
+    dst_col_name = input_graph.renumber_map.renumbered_dst_col_name
+
+    result = [client.submit(call_hits,
+                            Comms.get_session_id(),
+                            wf[1],
+                            src_col_name,
+                            dst_col_name,
+                            num_verts,
+                            num_edges,
+                            vertex_partition_offsets,
+                            input_graph.aggregate_segment_offsets,
+                            max_iter,
+                            tol,
+                            nstart,
+                            normalized,
+                            workers=[wf[0]])
+              for idx, wf in enumerate(data.worker_to_parts.items())]
+    wait(result)
+    ddf = dask_cudf.from_delayed(result)
+    if input_graph.renumbered:
+        return input_graph.unrenumber(ddf, 'vertex')
+
+    return ddf
