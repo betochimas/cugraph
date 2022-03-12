@@ -17,10 +17,23 @@ from cugraph.dask.common.input_utils import (get_distributed_data,
                                              get_vertex_partition_offsets)
 import cugraph.comms.comms as Comms
 import dask_cudf
+import pylibcugraph
 
 def uniform_neighborhood(G, start_info_list, fanout_vals, with_replacement=True):
     """
     Does neighborhood sampling. 
+
+    Parameters
+    ----------
+    G : cugraph.Graph
+
+    start_info_list : ??
+
+    fanout_vals : ??
+
+    with_replacement: bool
+
     """
-    return 0
+    print("Hello from cugraph/dask!")
+    return pylibcugraph.experimental.uniform_neighborhood_sampling(G, start_info_list, fanout_vals, with_replacement)
 
