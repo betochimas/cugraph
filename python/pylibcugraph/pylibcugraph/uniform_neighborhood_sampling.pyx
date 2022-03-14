@@ -24,78 +24,48 @@ from pylibcugraph._cugraph_c.error cimport (
     cugraph_error_t,
 )
 from pylibcugraph._cugraph_c.array cimport (
-
+    cugraph_type_erased_device_array_view_t,
+    cugraph_type_erased_device_array_view_create,
+    cugraph_type_erased_device_array_free,
 )
 from pylibcugraph._cugraph_c.graph cimport (
-
+    cugraph_graph_t,
 )
-from pylibcugraph._cugraph_c.algorithms cimport (
-    uniform_nbr_sample,
-)
+# from pylibcugraph._cugraph_c.algorithms cimport (
+#     uniform_nbr_sample,
+# )
 from pylibcugraph.resource_handle cimport (
     EXPERIMENTAL__ResourceHandle,
 )
 from pylibcugraph.graphs cimport (
-
+    _GPUGraph
 )
 from pylibcugraph.utils cimport (
     assert_success,
 )
 
-def EXPERIMENTAL__uniform_neighborhood_sampling_0(input_graph,
-                                                start_info_list,
-                                                h_fan_out,
-                                                bool_t with_replacement):
+def EXPERIMENTAL__uniform_neighborhood_sampling():
     """
     Does uniform neighborhood sampling.
 
     Parameters
     ----------
-    input_graph: _MGGraph???
-
+    input_graph: ???
     start_info_list: ???
-
     fanout_vals: ???
-
     with_replacement: ???
     """
-    cdef cugraph_error_code_t error_code
-    cdef cugraph_error_t* error_ptr
-
     print("Hello from uniform_neighborhood_sampling.pyx!")
-    num_starting_vs = 0
-
-    c_api_implemented = False
-    """
-    if c_api_implemented:
-
-        error_code = uniform_nbr_sample(c_resource_handle_ptr,
-                           c_graph_ptr,
-                           d_start,
-                           d_ranks,
-                           num_starting_vs,
-                           h_fan_out,
-                           flag_replacement)
-        assert_success(error_code, error_ptr, "uniform_nbr_sample")
-       
-        uniform_nbr_sample(raft::handle_t const& handle,
-                   graph_view_t const& graph_view,
-                   typename graph_view_t::vertex_type const* ptr_d_start,
-                   gpu_t const* ptr_d_ranks,
-                   size_t num_starting_vs,
-                   std::vector<int> const& h_fan_out,
-                   bool flag_replacement = true);
-    """
     return 0
 
-
-def EXPERIMENTAL__uniform_neighborhood_sampling(input_graph,
+"""
+def uniform_neighborhood_sampling_REAL(input_graph,
                                                 start_info_list,
                                                 h_fan_out,
                                                 bool_t with_replacement):
-    """
+
     Test.
-    """
+    
     # Remove below code once function signature is confirmed
     resource_handle = pylibcugraph.experimental.ResourceHandle()
     graph_props = pylibcugraph.experimental.GraphProperties(
@@ -120,4 +90,4 @@ def EXPERIMENTAL__uniform_neighborhood_sampling(input_graph,
     assert_success(error_code, error_ptr, "uniform_nbr_sample")
 
     return (src_vertices, dst_vertices, ranks, indices, rx_counts)
-
+"""

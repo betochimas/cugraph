@@ -20,3 +20,32 @@ import numpy as np
 # Test data
 # =============================================================================
 # The result names correspond to the datasets defined in conftest.py
+_test_data = {"karate.csv": {"temp": cp.asarray([0], dtype=np.int32)},
+              "dolphins.csv": {"temp": cp.asarray([0], dtype=np.int32)},
+              "Simple_1": {"temp": cp.asarray([0], dtype=np.int32)},
+              "Simple_2": {"temp": cp.asarray([0], dtype=np.int32)}
+              }
+
+# =============================================================================
+# Pytest fixtures
+# =============================================================================
+# fixtures used in this test module are defined in conftest.py
+
+
+# =============================================================================
+# Tests
+# =============================================================================
+
+def test_neighborhood_sampling(sg_graph_objs):
+    from pylibcugraph.experimental import uniform_neighborhood_sampling
+
+    (g, resource_handle, ds_name) = sg_graph_objs
+
+    (data) = _test_data[ds_name].values()
+    # (path_tuples) = _test_data[ds_name].values()
+    # (edge, rx_counts) = path_tuples 
+    result = uniform_neighborhood_sampling()
+    # result = uniform_neighborhood_sampling(G, start_info_list, fanout_vals, with_replacement=True)
+    expected = data
+    
+    assert expected == data
