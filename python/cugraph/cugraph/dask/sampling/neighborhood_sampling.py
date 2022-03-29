@@ -17,6 +17,7 @@ from cugraph.dask.common.input_utils import get_distributed_data
 import cugraph.comms.comms as Comms
 import dask_cudf
 import pylibcugraph.experimental as pylibcugraph
+import cudf
 
 
 def call_nbr_sampling(sID,
@@ -25,14 +26,15 @@ def call_nbr_sampling(sID,
                       dst_col_name,
                       num_edges,
                       do_expensive_check,
-                      start_info_list,
+                      start_list,
+                      info_list,
                       h_fan_out,
                       with_replacement):
 
     # Preparation for graph creation
     handle = Comms.get_handle(sID)
-    handle = pylibcugraph.experimental.ResourceHandle(handle.getHandle())
-    graph_properties = pylibcugraph.experimental.GraphProperties(
+    handle = pylibcugraph.ResourceHandle(handle.getHandle())
+    graph_properties = pylibcugraph.GraphProperties(
         is_multigraph=False)
     srcs = data[0][src_col_name]
     dsts = data[0][dst_col_name]
@@ -51,14 +53,32 @@ def call_nbr_sampling(sID,
 
     return pylibcugraph.uniform_neighborhood_sampling(handle,
                                                       mg,
-                                                      start_info_list,
+                                                      start_list,
+                                                      info_list,
                                                       h_fan_out,
                                                       with_replacement,
                                                       do_expensive_check)
 
 
+def convert_to_cudf(cp_arrays):
+    """
+    Creates a cudf DataFrame from cupy arrays from pylibcugraph wrapper
+    """
+    cupy_sources, cupy_destinations, cupy_labels, cupy_indices = cp_arrays
+    # cupy_sources, cupy_destinations, cupy_labels, cupy_indices,
+    #    cupy_counts = cp_arrays
+    df = cudf.DataFrame()
+    df["sources"] = cupy_sources
+    df["destinations"] = cupy_destinations
+    df["labels"] = cupy_labels
+    df["indices"] = cupy_indices
+    # df["counts"] = cupy_counts
+    return df
+
+
 def uniform_neighborhood(input_graph,
-                         start_info_list,
+                         start_list,
+                         info_list,
                          fanout_vals,
                          with_replacement=True):
     """
@@ -70,12 +90,14 @@ def uniform_neighborhood(input_graph,
         cuGraph graph, which contains connectivity information as dask cudf
         edge list dataframe
 
-    start_info_list : list
-        ...
+    start_info_list : list or cudf.Series
+        List of starting vertices for sampling, along with a corresponding
+        label for reorganizing results after sending the input to different
+        callers.
 
     fanout_vals : list
         List of branching out (fan-out) degrees per starting vertex for each
-        hop level
+        hop level.
 
     with_replacement: bool, optional (default=True)
         Flag to specify if the random sampling is done with replacement
@@ -94,11 +116,9 @@ def uniform_neighborhood(input_graph,
         ddf['index']: dask_cudf.Series
             Contains the indices from the sampling result
         ddf['counts']: dask_cudf.Series
-            Contains the transaction counts from the sampling result
+            Contains the transaction counts from the sampling result,
+            not currently included
     """
-
-    print("Hello from cugraph/dask!")
-
     # Initialize dask client
     client = default_client()
     # Important for handling renumbering
@@ -128,14 +148,22 @@ def uniform_neighborhood(input_graph,
                             dst_col_name,
                             num_edges,
                             False,
-                            start_info_list,
+                            start_list,
+                            info_list,
                             fanout_vals,
                             with_replacement,
                             workers=[wf[0]])
               for idx, wf in enumerate(data.worker_to_parts.items())]
 
     wait(result)
-    ddf = dask_cudf.from_delayed(result)
+
+    cudf_result = [client.submit(convert_to_cudf,
+                                 cp_arrays)
+                   for cp_arrays in result]
+
+    wait(cudf_result)
+
+    ddf = dask_cudf.from_delayed(cudf_result)
     if input_graph.renumbered:
         return input_graph.unrenumber(ddf, 'vertex')
 
