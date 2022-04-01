@@ -11,3 +11,4 @@ Random Walks
    :toctree: api/
 
    cugraph.random_walks
+   cugraph.node2vec
