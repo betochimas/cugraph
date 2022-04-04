@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, NVIDIA CORPORATION.
+ * Copyright (c) 2021, NVIDIA CORPORATION.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@
 
 #include <cassert>
 #include <cstdlib>  // FIXME: requirement for temporary std::getenv()
+#include <ctime>
 #include <limits>
 //
 #include <optional>
@@ -125,9 +126,10 @@ struct rrandom_gen_t {
       d_ptr_out_degs,              // input2
       d_ptr_out_degs,              // also stencil
       d_col_indx.begin(),
-      [] __device__(real_t rnd_val, edge_t crt_out_deg) {
-        vertex_t v_indx =
-          static_cast<vertex_t>(rnd_val >= 1.0 ? crt_out_deg - 1 : rnd_val * crt_out_deg);
+      [] __device__(real_t rnd_vindx, edge_t crt_out_deg) {
+        real_t max_ub     = static_cast<real_t>(crt_out_deg - 1);
+        auto interp_vindx = rnd_vindx * max_ub;
+        vertex_t v_indx   = static_cast<vertex_t>(interp_vindx);
         return (v_indx >= crt_out_deg ? crt_out_deg - 1 : v_indx);
       },
       [] __device__(auto crt_out_deg) { return crt_out_deg > 0; });
@@ -138,7 +140,7 @@ struct rrandom_gen_t {
   static void generate_random(raft::handle_t const& handle, real_t* p_d_rnd, size_t sz, seed_t seed)
   {
     cugraph::detail::uniform_random_fill(
-      handle.get_stream(), p_d_rnd, sz, real_t{0.0}, real_t{1.0}, seed);
+      handle.get_stream_view(), p_d_rnd, sz, real_t{0.0}, real_t{1.0}, seed);
   }
 
  private:
@@ -146,6 +148,29 @@ struct rrandom_gen_t {
   index_t num_paths_;
   real_t* d_ptr_random_;  // device buffer with real random values; size = num_paths_
   seed_t seed_;           // seed to be used for current batch
+};
+
+// seeding policy: time (clock) dependent,
+// to avoid RW calls repeating same random data:
+//
+template <typename seed_t>
+struct clock_seeding_t {
+  clock_seeding_t(void) = default;
+
+  seed_t operator()(void) { return static_cast<seed_t>(std::time(nullptr)); }
+};
+
+// seeding policy: fixed for debug/testing repro
+//
+template <typename seed_t>
+struct fixed_seeding_t {
+  // purposely no default cnstr.
+
+  fixed_seeding_t(seed_t seed) : seed_(seed) {}
+  seed_t operator()(void) { return seed_; }
+
+ private:
+  seed_t seed_;
 };
 
 // classes abstracting the next vertex extraction mechanism:
@@ -508,7 +533,7 @@ struct random_walker_t {
                                        thrust::make_counting_iterator<index_t>(0),
                                        predicate_w);
 
-    handle_.sync_stream();
+    handle_.get_stream_view().synchronize();
 
     d_coalesced_v.resize(thrust::distance(d_coalesced_v.begin(), new_end_v), handle_.get_stream());
     d_coalesced_w.resize(thrust::distance(d_coalesced_w.begin(), new_end_w), handle_.get_stream());
@@ -751,10 +776,10 @@ random_walks_impl(raft::handle_t const& handle,
 
   // pre-allocate num_paths * max_depth;
   //
-  device_vec_t<vertex_t> d_coalesced_v(num_paths * max_depth, stream);  // coalesced vertex set
-  device_vec_t<weight_t> d_coalesced_w(num_paths * (max_depth - 1),
-                                       stream);         // coalesced weight set
-  device_vec_t<index_t> d_paths_sz(num_paths, stream);  // paths sizes
+  auto coalesced_sz = num_paths * max_depth;
+  device_vec_t<vertex_t> d_coalesced_v(coalesced_sz, stream);  // coalesced vertex set
+  device_vec_t<weight_t> d_coalesced_w(coalesced_sz, stream);  // coalesced weight set
+  device_vec_t<index_t> d_paths_sz(num_paths, stream);         // paths sizes
 
   // traversal policy:
   //
@@ -945,7 +970,7 @@ struct coo_convertor_t {
       handle_.get_thrust_policy(), d_sizes.begin(), d_sizes.end(), d_scan.begin());
 
     index_t total_sz{0};
-    RAFT_CUDA_TRY(cudaMemcpy(
+    CUDA_TRY(cudaMemcpy(
       &total_sz, raw_ptr(d_scan) + num_paths_ - 1, sizeof(index_t), cudaMemcpyDeviceToHost));
 
     device_vec_t<int> d_stencil(total_sz, handle_.get_stream());
@@ -1270,7 +1295,7 @@ query_rw_sizes_offsets(raft::handle_t const& handle, index_t num_paths, index_t 
                     d_weight_sizes.begin(),
                     [] __device__(auto vertex_path_sz) { return vertex_path_sz - 1; });
 
-  handle.sync_stream();
+  handle.get_stream_view().synchronize();
 
   thrust::exclusive_scan(handle.get_thrust_policy(),
                          d_weight_sizes.begin(),

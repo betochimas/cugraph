@@ -10,7 +10,6 @@ This page provides a list of all publicly accessible modules, methods and classe
     :caption: API Documentation
 
     structure
-    graph_implementation
     centrality
     community
     components

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022, NVIDIA CORPORATION.
+ * Copyright (c) 2019-2021, NVIDIA CORPORATION.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 
 #pragma once
 
-#include <cstdio>
 #include <cuda_runtime.h>
 #include <execinfo.h>
+#include <cstdio>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -92,7 +92,7 @@ class Exception : public std::exception {
 template <typename Type>
 void copy(Type* dst, const Type* src, size_t len, cudaStream_t stream)
 {
-  RAFT_CUDA_TRY(cudaMemcpyAsync(dst, src, len * sizeof(Type), cudaMemcpyDefault, stream));
+  CUDA_TRY(cudaMemcpyAsync(dst, src, len * sizeof(Type), cudaMemcpyDefault, stream));
 }
 
 /**
@@ -118,8 +118,7 @@ void updateHost(Type* hPtr, const Type* dPtr, size_t len, cudaStream_t stream)
 template <typename Type>
 void copyAsync(Type* dPtr1, const Type* dPtr2, size_t len, cudaStream_t stream)
 {
-  RAFT_CUDA_TRY(
-    cudaMemcpyAsync(dPtr1, dPtr2, len * sizeof(Type), cudaMemcpyDeviceToDevice, stream));
+  CUDA_TRY(cudaMemcpyAsync(dPtr1, dPtr2, len * sizeof(Type), cudaMemcpyDeviceToDevice, stream));
 }
 /** @} */
 
@@ -190,8 +189,7 @@ void myPrintDevVector(const char* variableName,
                       OutStream& out)
 {
   std::vector<T> hostMem(componentsCount);
-  RAFT_CUDA_TRY(
-    cudaMemcpy(hostMem.data(), devMem, componentsCount * sizeof(T), cudaMemcpyDeviceToHost));
+  CUDA_TRY(cudaMemcpy(hostMem.data(), devMem, componentsCount * sizeof(T), cudaMemcpyDeviceToHost));
   myPrintHostVector(variableName, hostMem.data(), componentsCount, out);
 }
 

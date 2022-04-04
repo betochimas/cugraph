@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, NVIDIA CORPORATION.
+ * Copyright (c) 2021, NVIDIA CORPORATION.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 #pragma once
 
-#include <stdint.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -33,7 +31,7 @@ typedef enum cugraph_error_code_ {
 } cugraph_error_code_t;
 
 typedef struct cugraph_error_ {
-  int32_t align_;
+  int align_;
 } cugraph_error_t;
 
 /**

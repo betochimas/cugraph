@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2022, NVIDIA CORPORATION.
+ * Copyright (c) 2020-2021, NVIDIA CORPORATION.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 
 #include <utilities/base_fixture.hpp>
-#include <utilities/high_res_clock.h>
 #include <utilities/test_utilities.hpp>
 
 #include <cugraph/algorithms.hpp>
@@ -221,15 +220,25 @@ void check_coarsened_graph_results(edge_t* org_offsets,
   return;
 }
 
-struct CoarsenGraph_Usecase {
+typedef struct CoarsenGraph_Usecase_t {
+  std::string graph_file_full_path{};
   double coarsen_ratio{0.0};
   bool test_weighted{false};
-  bool check_correctness{true};
-};
 
-template <typename input_usecase_t>
-class Tests_CoarsenGraph
-  : public ::testing::TestWithParam<std::tuple<CoarsenGraph_Usecase, input_usecase_t>> {
+  CoarsenGraph_Usecase_t(std::string const& graph_file_path,
+                         double coarsen_ratio,
+                         bool test_weighted)
+    : coarsen_ratio(coarsen_ratio), test_weighted(test_weighted)
+  {
+    if ((graph_file_path.length() > 0) && (graph_file_path[0] != '/')) {
+      graph_file_full_path = cugraph::test::get_rapids_dataset_root_dir() + "/" + graph_file_path;
+    } else {
+      graph_file_full_path = graph_file_path;
+    }
+  };
+} CoarsenGraph_Usecase;
+
+class Tests_CoarsenGraph : public ::testing::TestWithParam<CoarsenGraph_Usecase> {
  public:
   Tests_CoarsenGraph() {}
   static void SetupTestCase() {}
@@ -239,43 +248,26 @@ class Tests_CoarsenGraph
   virtual void TearDown() {}
 
   template <typename vertex_t, typename edge_t, typename weight_t, bool store_transposed>
-  void run_current_test(
-    std::tuple<CoarsenGraph_Usecase const&, input_usecase_t const&> const& param)
+  void run_current_test(CoarsenGraph_Usecase const& configuration)
   {
-    constexpr bool renumber                     = true;
-    auto [coarsen_graph_usecase, input_usecase] = param;
-
     raft::handle_t handle{};
-    HighResClock hr_clock{};
 
     // FIXME: remove this once we drop Pascal support
     if (handle.get_device_properties().major < 7) {  // Pascal is not supported, skip testing
       return;
     }
 
-    if (cugraph::test::g_perf) {
-      RAFT_CUDA_TRY(cudaDeviceSynchronize());  // for consistent performance measurement
-      hr_clock.start();
-    }
-
-    auto [graph, d_renumber_map_labels] =
-      cugraph::test::construct_graph<vertex_t, edge_t, weight_t, store_transposed, false>(
-        handle, input_usecase, coarsen_graph_usecase.test_weighted, renumber);
-
-    if (cugraph::test::g_perf) {
-      RAFT_CUDA_TRY(cudaDeviceSynchronize());  // for consistent performance measurement
-      double elapsed_time{0.0};
-      hr_clock.stop(&elapsed_time);
-      std::cout << "construct_graph took " << elapsed_time * 1e-6 << " s.\n";
-    }
-
+    cugraph::graph_t<vertex_t, edge_t, weight_t, store_transposed, false> graph(handle);
+    std::tie(graph, std::ignore) = cugraph::test::
+      read_graph_from_matrix_market_file<vertex_t, edge_t, weight_t, store_transposed, false>(
+        handle, configuration.graph_file_full_path, configuration.test_weighted, false);
     auto graph_view = graph.view();
 
     if (graph_view.get_number_of_vertices() == 0) { return; }
 
     std::vector<vertex_t> h_labels(graph_view.get_number_of_vertices());
-    auto num_labels = std::max(
-      static_cast<vertex_t>(h_labels.size() * coarsen_graph_usecase.coarsen_ratio), vertex_t{1});
+    auto num_labels =
+      std::max(static_cast<vertex_t>(h_labels.size() * configuration.coarsen_ratio), vertex_t{1});
 
     std::default_random_engine generator{};
     std::uniform_int_distribution<vertex_t> distribution{0, num_labels - 1};
@@ -287,178 +279,102 @@ class Tests_CoarsenGraph
     rmm::device_uvector<vertex_t> d_labels(h_labels.size(), handle.get_stream());
     raft::update_device(d_labels.data(), h_labels.data(), h_labels.size(), handle.get_stream());
 
-    handle.sync_stream();
+    CUDA_TRY(cudaStreamSynchronize(handle.get_stream()));
 
-    if (cugraph::test::g_perf) {
-      RAFT_CUDA_TRY(cudaDeviceSynchronize());  // for consistent performance measurement
-      hr_clock.start();
-    }
+    std::unique_ptr<cugraph::graph_t<vertex_t, edge_t, weight_t, store_transposed, false>>
+      coarse_graph{};
+    rmm::device_uvector<vertex_t> coarse_vertices_to_labels(0, handle.get_stream());
 
-    auto [coarse_graph, coarse_vertices_to_labels] =
+    CUDA_TRY(cudaDeviceSynchronize());  // for consistent performance measurement
+
+    std::tie(coarse_graph, coarse_vertices_to_labels) =
       cugraph::coarsen_graph(handle, graph_view, d_labels.begin());
 
-    if (cugraph::test::g_perf) {
-      RAFT_CUDA_TRY(cudaDeviceSynchronize());  // for consistent performance measurement
-      double elapsed_time{0.0};
-      hr_clock.stop(&elapsed_time);
-      std::cout << "coarsen_graph took " << elapsed_time * 1e-6 << " s.\n";
-    }
+    CUDA_TRY(cudaDeviceSynchronize());  // for consistent performance measurement
 
-    if (coarsen_graph_usecase.check_correctness) {
-      std::vector<edge_t> h_org_offsets(graph_view.get_number_of_vertices() + 1);
-      std::vector<vertex_t> h_org_indices(graph_view.get_number_of_edges());
-      std::vector<weight_t> h_org_weights{};
-      raft::update_host(h_org_offsets.data(),
-                        graph_view.get_matrix_partition_view().get_offsets(),
-                        graph_view.get_number_of_vertices() + 1,
-                        handle.get_stream());
-      raft::update_host(h_org_indices.data(),
-                        graph_view.get_matrix_partition_view().get_indices(),
+    std::vector<edge_t> h_org_offsets(graph_view.get_number_of_vertices() + 1);
+    std::vector<vertex_t> h_org_indices(graph_view.get_number_of_edges());
+    std::vector<weight_t> h_org_weights{};
+    raft::update_host(h_org_offsets.data(),
+                      graph_view.get_matrix_partition_view().get_offsets(),
+                      graph_view.get_number_of_vertices() + 1,
+                      handle.get_stream());
+    raft::update_host(h_org_indices.data(),
+                      graph_view.get_matrix_partition_view().get_indices(),
+                      graph_view.get_number_of_edges(),
+                      handle.get_stream());
+    if (graph_view.is_weighted()) {
+      h_org_weights.assign(graph_view.get_number_of_edges(), weight_t{0.0});
+      raft::update_host(h_org_weights.data(),
+                        *(graph_view.get_matrix_partition_view().get_weights()),
                         graph_view.get_number_of_edges(),
                         handle.get_stream());
-      if (graph_view.is_weighted()) {
-        h_org_weights.assign(graph_view.get_number_of_edges(), weight_t{0.0});
-        raft::update_host(h_org_weights.data(),
-                          *(graph_view.get_matrix_partition_view().get_weights()),
-                          graph_view.get_number_of_edges(),
-                          handle.get_stream());
-      }
+    }
 
-      auto coarse_graph_view = coarse_graph.view();
+    auto coarse_graph_view = coarse_graph->view();
 
-      std::vector<edge_t> h_coarse_offsets(coarse_graph_view.get_number_of_vertices() + 1);
-      std::vector<vertex_t> h_coarse_indices(coarse_graph_view.get_number_of_edges());
-      std::vector<weight_t> h_coarse_weights{};
-      raft::update_host(h_coarse_offsets.data(),
-                        coarse_graph_view.get_matrix_partition_view().get_offsets(),
-                        coarse_graph_view.get_number_of_vertices() + 1,
-                        handle.get_stream());
-      raft::update_host(h_coarse_indices.data(),
-                        coarse_graph_view.get_matrix_partition_view().get_indices(),
+    std::vector<edge_t> h_coarse_offsets(coarse_graph_view.get_number_of_vertices() + 1);
+    std::vector<vertex_t> h_coarse_indices(coarse_graph_view.get_number_of_edges());
+    std::vector<weight_t> h_coarse_weights{};
+    raft::update_host(h_coarse_offsets.data(),
+                      coarse_graph_view.get_matrix_partition_view().get_offsets(),
+                      coarse_graph_view.get_number_of_vertices() + 1,
+                      handle.get_stream());
+    raft::update_host(h_coarse_indices.data(),
+                      coarse_graph_view.get_matrix_partition_view().get_indices(),
+                      coarse_graph_view.get_number_of_edges(),
+                      handle.get_stream());
+    if (graph_view.is_weighted()) {
+      h_coarse_weights.resize(coarse_graph_view.get_number_of_edges());
+      raft::update_host(h_coarse_weights.data(),
+                        *(coarse_graph_view.get_matrix_partition_view().get_weights()),
                         coarse_graph_view.get_number_of_edges(),
                         handle.get_stream());
-      if (graph_view.is_weighted()) {
-        h_coarse_weights.resize(coarse_graph_view.get_number_of_edges());
-        raft::update_host(h_coarse_weights.data(),
-                          *(coarse_graph_view.get_matrix_partition_view().get_weights()),
-                          coarse_graph_view.get_number_of_edges(),
-                          handle.get_stream());
-      }
-
-      std::vector<vertex_t> h_coarse_vertices_to_labels(coarse_vertices_to_labels.size());
-      raft::update_host(h_coarse_vertices_to_labels.data(),
-                        coarse_vertices_to_labels.data(),
-                        coarse_vertices_to_labels.size(),
-                        handle.get_stream());
-
-      handle.sync_stream();
-
-      check_coarsened_graph_results(h_org_offsets.data(),
-                                    h_org_indices.data(),
-                                    h_org_weights.data(),
-                                    h_labels.data(),
-                                    h_coarse_offsets.data(),
-                                    h_coarse_indices.data(),
-                                    h_coarse_weights.data(),
-                                    h_coarse_vertices_to_labels.data(),
-                                    graph_view.get_number_of_vertices(),
-                                    coarse_graph_view.get_number_of_vertices());
     }
+
+    std::vector<vertex_t> h_coarse_vertices_to_labels(coarse_vertices_to_labels.size());
+    raft::update_host(h_coarse_vertices_to_labels.data(),
+                      coarse_vertices_to_labels.data(),
+                      coarse_vertices_to_labels.size(),
+                      handle.get_stream());
+
+    CUDA_TRY(cudaStreamSynchronize(handle.get_stream()));
+
+    check_coarsened_graph_results(h_org_offsets.data(),
+                                  h_org_indices.data(),
+                                  h_org_weights.data(),
+                                  h_labels.data(),
+                                  h_coarse_offsets.data(),
+                                  h_coarse_indices.data(),
+                                  h_coarse_weights.data(),
+                                  h_coarse_vertices_to_labels.data(),
+                                  graph_view.get_number_of_vertices(),
+                                  coarse_graph_view.get_number_of_vertices());
   }
 };
 
-using Tests_CoarsenGraph_File = Tests_CoarsenGraph<cugraph::test::File_Usecase>;
-using Tests_CoarsenGraph_Rmat = Tests_CoarsenGraph<cugraph::test::Rmat_Usecase>;
+// FIXME: add tests for type combinations
 
-TEST_P(Tests_CoarsenGraph_File, CheckInt32Int32FloatTransposeFalse)
+TEST_P(Tests_CoarsenGraph, CheckInt32Int32FloatTransposed)
 {
-  run_current_test<int32_t, int32_t, float, false>(
-    override_File_Usecase_with_cmd_line_arguments(GetParam()));
+  run_current_test<int32_t, int32_t, float, true>(GetParam());
 }
 
-TEST_P(Tests_CoarsenGraph_File, CheckInt32Int32FloatTransposeTrue)
+TEST_P(Tests_CoarsenGraph, CheckInt32Int32FloatUntransposed)
 {
-  run_current_test<int32_t, int32_t, float, true>(
-    override_File_Usecase_with_cmd_line_arguments(GetParam()));
-}
-
-TEST_P(Tests_CoarsenGraph_Rmat, CheckInt32Int32FloatTransposeFalse)
-{
-  run_current_test<int32_t, int32_t, float, false>(
-    override_Rmat_Usecase_with_cmd_line_arguments(GetParam()));
-}
-
-TEST_P(Tests_CoarsenGraph_Rmat, CheckInt32Int32FloatTransposeTrue)
-{
-  run_current_test<int32_t, int32_t, float, true>(
-    override_Rmat_Usecase_with_cmd_line_arguments(GetParam()));
-}
-
-TEST_P(Tests_CoarsenGraph_Rmat, CheckInt32Int64FloatTransposeFalse)
-{
-  run_current_test<int32_t, int64_t, float, false>(
-    override_Rmat_Usecase_with_cmd_line_arguments(GetParam()));
-}
-
-TEST_P(Tests_CoarsenGraph_Rmat, CheckInt32Int64FloatTransposeTrue)
-{
-  run_current_test<int32_t, int64_t, float, true>(
-    override_Rmat_Usecase_with_cmd_line_arguments(GetParam()));
-}
-
-TEST_P(Tests_CoarsenGraph_Rmat, CheckInt64Int64FloatTransposeFalse)
-{
-  run_current_test<int64_t, int64_t, float, false>(
-    override_Rmat_Usecase_with_cmd_line_arguments(GetParam()));
-}
-
-TEST_P(Tests_CoarsenGraph_Rmat, CheckInt64Int64FloatTransposeTrue)
-{
-  run_current_test<int64_t, int64_t, float, true>(
-    override_Rmat_Usecase_with_cmd_line_arguments(GetParam()));
+  run_current_test<int32_t, int32_t, float, false>(GetParam());
 }
 
 INSTANTIATE_TEST_SUITE_P(
-  file_test,
-  Tests_CoarsenGraph_File,
-  ::testing::Combine(
-    // enable correctness check
-    ::testing::Values(CoarsenGraph_Usecase{0.2, false}, CoarsenGraph_Usecase{0.2, true}),
-    ::testing::Values(cugraph::test::File_Usecase("test/datasets/karate.mtx"),
-                      cugraph::test::File_Usecase("test/datasets/dolphins.mtx"))));
-
-INSTANTIATE_TEST_SUITE_P(
-  rmat_small_test,
-  Tests_CoarsenGraph_Rmat,
-  ::testing::Combine(
-    // enable correctness checks
-    ::testing::Values(CoarsenGraph_Usecase{0.2, false}, CoarsenGraph_Usecase{0.2, true}),
-    ::testing::Values(cugraph::test::Rmat_Usecase(10, 16, 0.57, 0.19, 0.19, 0, false, false),
-                      cugraph::test::Rmat_Usecase(10, 16, 0.57, 0.19, 0.19, 0, true, false))));
-
-INSTANTIATE_TEST_SUITE_P(
-  file_benchmark_test, /* note that the test filename can be overridden in benchmarking (with
-                          --gtest_filter to select only the file_benchmark_test with a specific
-                          vertex & edge type combination) by command line arguments and do not
-                          include more than one File_Usecase that differ only in filename
-                          (to avoid running same benchmarks more than once) */
-  Tests_CoarsenGraph_File,
-  ::testing::Combine(::testing::Values(CoarsenGraph_Usecase{0.2, false, false},
-                                       CoarsenGraph_Usecase{0.2, true, false}),
-                     ::testing::Values(cugraph::test::File_Usecase("test/datasets/karate.mtx"))));
-
-INSTANTIATE_TEST_SUITE_P(
-  rmat_benchmark_test, /* note that scale & edge factor can be overridden in benchmarking (with
-                          --gtest_filter to select only the rmat_benchmark_test with a specific
-                          vertex & edge type combination) by command line arguments and do not
-                          include more than one Rmat_Usecase that differ only in scale or edge
-                          factor (to avoid running same benchmarks more than once) */
-  Tests_CoarsenGraph_Rmat,
-  ::testing::Combine(
-    // disable correctness checks for large graphs
-    ::testing::Values(CoarsenGraph_Usecase{0.2, false, false},
-                      CoarsenGraph_Usecase{0.2, true, false}),
-    ::testing::Values(cugraph::test::Rmat_Usecase(20, 32, 0.57, 0.19, 0.19, 0, false, false),
-                      cugraph::test::Rmat_Usecase(20, 32, 0.57, 0.19, 0.19, 0, true, false))));
+  simple_test,
+  Tests_CoarsenGraph,
+  ::testing::Values(CoarsenGraph_Usecase("test/datasets/karate.mtx", 0.2, false),
+                    CoarsenGraph_Usecase("test/datasets/karate.mtx", 0.2, true),
+                    CoarsenGraph_Usecase("test/datasets/web-Google.mtx", 0.1, false),
+                    CoarsenGraph_Usecase("test/datasets/web-Google.mtx", 0.1, true),
+                    CoarsenGraph_Usecase("test/datasets/ljournal-2008.mtx", 0.1, false),
+                    CoarsenGraph_Usecase("test/datasets/ljournal-2008.mtx", 0.1, true),
+                    CoarsenGraph_Usecase("test/datasets/webbase-1M.mtx", 0.1, false),
+                    CoarsenGraph_Usecase("test/datasets/webbase-1M.mtx", 0.1, true)));
 
 CUGRAPH_TEST_PROGRAM_MAIN()

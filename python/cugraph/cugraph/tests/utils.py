@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2022, NVIDIA CORPORATION.
+# Copyright (c) 2020-2021, NVIDIA CORPORATION.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -129,14 +129,13 @@ NX_DIR_INPUT_TYPES = [
 
 CUGRAPH_INPUT_TYPES = [
     pytest.param(
-        cugraph.Graph(), marks=pytest.mark.cugraph_types, id="cugraph.Graph"
+        cugraph.Graph, marks=pytest.mark.cugraph_types, id="cugraph.Graph"
     ),
 ]
 
 CUGRAPH_DIR_INPUT_TYPES = [
     pytest.param(
-        cugraph.Graph(directed=True), marks=pytest.mark.cugraph_types,
-        id="cugraph.Graph(directed=True)"
+        cugraph.DiGraph, marks=pytest.mark.cugraph_types, id="cugraph.DiGraph"
     ),
 ]
 
@@ -173,8 +172,7 @@ def read_csv_for_nx(csv_file, read_weights_in_sp=True, read_weights=True):
 
 
 def create_obj_from_csv(
-    csv_file_name, obj_type, csv_has_weights=True, edgevals=False,
-    directed=False
+    csv_file_name, obj_type, csv_has_weights=True, edgevals=False
 ):
     """
     Return an object based on obj_type populated with the contents of
@@ -184,12 +182,6 @@ def create_obj_from_csv(
         return generate_cugraph_graph_from_file(
             csv_file_name,
             directed=(obj_type is cugraph.DiGraph),
-            edgevals=edgevals,
-        )
-    elif isinstance(obj_type, cugraph.Graph):
-        return generate_cugraph_graph_from_file(
-            csv_file_name,
-            directed=(obj_type.is_directed()),
             edgevals=edgevals,
         )
 
@@ -314,7 +306,6 @@ def generate_nx_graph_from_file(graph_file, directed=True, edgevals=False):
 def generate_cugraph_graph_from_file(graph_file, directed=True,
                                      edgevals=False):
     cu_M = read_csv_file(graph_file)
-
     G = cugraph.Graph(directed=directed)
 
     if edgevals:
@@ -328,7 +319,7 @@ def generate_mg_batch_cugraph_graph_from_file(graph_file, directed=True):
     client = get_client()
     _ddf = read_dask_cudf_csv_file(graph_file)
     ddf = client.persist(_ddf)
-    G = cugraph.Graph(directed=directed)
+    G = cugraph.DiGraph() if directed else cugraph.Graph()
     G.from_dask_cudf_edgelist(ddf)
     return G
 
@@ -458,14 +449,9 @@ def genFixtureParamsProduct(*args):
     for paramCombo in product(*paramLists):
         values = [p.values[0] for p in paramCombo]
         marks = [m for p in paramCombo for m in p.marks]
-        id_strings = []
-        for (p, id) in zip(paramCombo, ids):
-            # Assume id is either a string or a callable
-            if isinstance(id, str):
-                id_strings.append("%s=%s" % (id, p.values[0]))
-            else:
-                id_strings.append(id(p.values[0]))
-        comboid = ",".join(id_strings)
+        comboid = ",".join(
+            ["%s=%s" % (id, p.values[0]) for (p, id) in zip(paramCombo, ids)]
+        )
         retList.append(pytest.param(values, marks=marks, id=comboid))
     return retList
 

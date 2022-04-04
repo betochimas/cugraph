@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, NVIDIA CORPORATION.
+ * Copyright (c) 2021, NVIDIA CORPORATION.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@
 
 #include <c_api/abstract_functor.hpp>
 #include <c_api/graph.hpp>
-#include <c_api/resource_handle.hpp>
-#include <c_api/utils.hpp>
 
 #include <cugraph/algorithms.hpp>
 #include <cugraph/detail/utility_wrappers.hpp>
 #include <cugraph/graph_functions.hpp>
+#include <cugraph/visitors/generic_cascaded_dispatch.hpp>
+
+#include <raft/handle.hpp>
 
 #include <optional>
 
@@ -38,9 +39,9 @@ struct cugraph_pagerank_result_t {
 struct pagerank_functor : public abstract_functor {
   raft::handle_t const& handle_;
   cugraph_graph_t* graph_;
-  cugraph_type_erased_device_array_view_t const* precomputed_vertex_out_weight_sums_;
-  cugraph_type_erased_device_array_view_t* personalization_vertices_;
-  cugraph_type_erased_device_array_view_t const* personalization_values_;
+  cugraph_type_erased_device_array_t const* precomputed_vertex_out_weight_sums_;
+  cugraph_type_erased_device_array_t* personalization_vertices_;
+  cugraph_type_erased_device_array_t const* personalization_values_;
   double alpha_;
   double epsilon_;
   size_t max_iterations_;
@@ -48,29 +49,22 @@ struct pagerank_functor : public abstract_functor {
   bool do_expensive_check_;
   cugraph_pagerank_result_t* result_{};
 
-  pagerank_functor(
-    ::cugraph_resource_handle_t const* handle,
-    ::cugraph_graph_t* graph,
-    ::cugraph_type_erased_device_array_view_t const* precomputed_vertex_out_weight_sums,
-    ::cugraph_type_erased_device_array_view_t* personalization_vertices,
-    ::cugraph_type_erased_device_array_view_t const* personalization_values,
-    double alpha,
-    double epsilon,
-    size_t max_iterations,
-    bool has_initial_guess,
-    bool do_expensive_check)
+  pagerank_functor(raft::handle_t const& handle,
+                   cugraph_graph_t* graph,
+                   cugraph_type_erased_device_array_t const* precomputed_vertex_out_weight_sums,
+                   cugraph_type_erased_device_array_t* personalization_vertices,
+                   cugraph_type_erased_device_array_t const* personalization_values,
+                   double alpha,
+                   double epsilon,
+                   size_t max_iterations,
+                   bool has_initial_guess,
+                   bool do_expensive_check)
     : abstract_functor(),
-      handle_(*reinterpret_cast<cugraph::c_api::cugraph_resource_handle_t const*>(handle)->handle_),
-      graph_(reinterpret_cast<cugraph::c_api::cugraph_graph_t*>(graph)),
-      precomputed_vertex_out_weight_sums_(
-        reinterpret_cast<cugraph::c_api::cugraph_type_erased_device_array_view_t const*>(
-          precomputed_vertex_out_weight_sums)),
-      personalization_vertices_(
-        reinterpret_cast<cugraph::c_api::cugraph_type_erased_device_array_view_t*>(
-          personalization_vertices)),
-      personalization_values_(
-        reinterpret_cast<cugraph::c_api::cugraph_type_erased_device_array_view_t const*>(
-          personalization_values)),
+      handle_(handle),
+      graph_(graph),
+      precomputed_vertex_out_weight_sums_(precomputed_vertex_out_weight_sums),
+      personalization_vertices_(personalization_vertices),
+      personalization_values_(personalization_values),
       alpha_(alpha),
       epsilon_(epsilon),
       max_iterations_(max_iterations),
@@ -105,7 +99,9 @@ struct pagerank_functor : public abstract_functor {
 
       auto number_map = reinterpret_cast<rmm::device_uvector<vertex_t>*>(graph_->number_map_);
 
-      rmm::device_uvector<weight_t> pageranks(graph_view.get_number_of_local_vertices(),
+      rmm::device_uvector<vertex_t> vertex_ids(graph->get_number_of_vertices(),
+                                               handle_.get_stream());
+      rmm::device_uvector<weight_t> pageranks(graph->get_number_of_vertices(),
                                               handle_.get_stream());
 
       if (personalization_vertices_ != nullptr) {
@@ -143,13 +139,11 @@ struct pagerank_functor : public abstract_functor {
         has_initial_guess_,
         do_expensive_check_);
 
-      rmm::device_uvector<vertex_t> vertex_ids(graph_view.get_number_of_local_vertices(),
-                                               handle_.get_stream());
       raft::copy(vertex_ids.data(), number_map->data(), vertex_ids.size(), handle_.get_stream());
 
       result_ = new cugraph_pagerank_result_t{
-        new cugraph_type_erased_device_array_t(vertex_ids, graph_->vertex_type_),
-        new cugraph_type_erased_device_array_t(pageranks, graph_->weight_type_)};
+        new cugraph_type_erased_device_array_t(std::move(vertex_ids), graph_->vertex_type_),
+        new cugraph_type_erased_device_array_t(std::move(pageranks), graph_->weight_type_)};
     }
   }
 };
@@ -157,20 +151,18 @@ struct pagerank_functor : public abstract_functor {
 }  // namespace c_api
 }  // namespace cugraph
 
-extern "C" cugraph_type_erased_device_array_view_t* cugraph_pagerank_result_get_vertices(
+extern "C" cugraph_type_erased_device_array_t* cugraph_pagerank_result_get_vertices(
   cugraph_pagerank_result_t* result)
 {
   auto internal_pointer = reinterpret_cast<cugraph::c_api::cugraph_pagerank_result_t*>(result);
-  return reinterpret_cast<cugraph_type_erased_device_array_view_t*>(
-    internal_pointer->vertex_ids_->view());
+  return reinterpret_cast<cugraph_type_erased_device_array_t*>(internal_pointer->vertex_ids_);
 }
 
-extern "C" cugraph_type_erased_device_array_view_t* cugraph_pagerank_result_get_pageranks(
+extern "C" cugraph_type_erased_device_array_t* cugraph_pagerank_result_get_pageranks(
   cugraph_pagerank_result_t* result)
 {
   auto internal_pointer = reinterpret_cast<cugraph::c_api::cugraph_pagerank_result_t*>(result);
-  return reinterpret_cast<cugraph_type_erased_device_array_view_t*>(
-    internal_pointer->pageranks_->view());
+  return reinterpret_cast<cugraph_type_erased_device_array_t*>(internal_pointer->pageranks_);
 }
 
 extern "C" void cugraph_pagerank_result_free(cugraph_pagerank_result_t* result)
@@ -184,7 +176,7 @@ extern "C" void cugraph_pagerank_result_free(cugraph_pagerank_result_t* result)
 extern "C" cugraph_error_code_t cugraph_pagerank(
   const cugraph_resource_handle_t* handle,
   cugraph_graph_t* graph,
-  const cugraph_type_erased_device_array_view_t* precomputed_vertex_out_weight_sums,
+  const cugraph_type_erased_device_array_t* precomputed_vertex_out_weight_sums,
   double alpha,
   double epsilon,
   size_t max_iterations,
@@ -193,26 +185,55 @@ extern "C" cugraph_error_code_t cugraph_pagerank(
   cugraph_pagerank_result_t** result,
   cugraph_error_t** error)
 {
-  cugraph::c_api::pagerank_functor functor(handle,
-                                           graph,
-                                           precomputed_vertex_out_weight_sums,
-                                           nullptr,
-                                           nullptr,
-                                           alpha,
-                                           epsilon,
-                                           max_iterations,
-                                           has_initial_guess,
-                                           do_expensive_check);
+  *result = nullptr;
+  *error  = nullptr;
 
-  return cugraph::c_api::run_algorithm(graph, functor, result, error);
+  try {
+    auto p_handle = reinterpret_cast<raft::handle_t const*>(handle);
+    auto p_graph  = reinterpret_cast<cugraph::c_api::cugraph_graph_t*>(graph);
+
+    auto p_precomputed_vertex_out_weight_sums =
+      reinterpret_cast<cugraph::c_api::cugraph_type_erased_device_array_t const*>(
+        precomputed_vertex_out_weight_sums);
+
+    cugraph::c_api::pagerank_functor functor(*p_handle,
+                                             p_graph,
+                                             p_precomputed_vertex_out_weight_sums,
+                                             nullptr,
+                                             nullptr,
+                                             alpha,
+                                             epsilon,
+                                             max_iterations,
+                                             has_initial_guess,
+                                             do_expensive_check);
+
+    cugraph::dispatch::vertex_dispatcher(cugraph::c_api::dtypes_mapping[p_graph->vertex_type_],
+                                         cugraph::c_api::dtypes_mapping[p_graph->edge_type_],
+                                         cugraph::c_api::dtypes_mapping[p_graph->weight_type_],
+                                         p_graph->store_transposed_,
+                                         p_graph->multi_gpu_,
+                                         functor);
+
+    if (functor.error_code_ != CUGRAPH_SUCCESS) {
+      *error = reinterpret_cast<cugraph_error_t*>(functor.error_.release());
+      return functor.error_code_;
+    }
+
+    *result = reinterpret_cast<cugraph_pagerank_result_t*>(functor.result_);
+  } catch (std::exception const& ex) {
+    *error = reinterpret_cast<cugraph_error_t*>(new cugraph::c_api::cugraph_error_t{ex.what()});
+    return CUGRAPH_UNKNOWN_ERROR;
+  }
+
+  return CUGRAPH_SUCCESS;
 }
 
 extern "C" cugraph_error_code_t cugraph_personalized_pagerank(
   const cugraph_resource_handle_t* handle,
   cugraph_graph_t* graph,
-  const cugraph_type_erased_device_array_view_t* precomputed_vertex_out_weight_sums,
-  cugraph_type_erased_device_array_view_t* personalization_vertices,
-  const cugraph_type_erased_device_array_view_t* personalization_values,
+  const cugraph_type_erased_device_array_t* precomputed_vertex_out_weight_sums,
+  cugraph_type_erased_device_array_t* personalization_vertices,
+  const cugraph_type_erased_device_array_t* personalization_values,
   double alpha,
   double epsilon,
   size_t max_iterations,
@@ -221,16 +242,51 @@ extern "C" cugraph_error_code_t cugraph_personalized_pagerank(
   cugraph_pagerank_result_t** result,
   cugraph_error_t** error)
 {
-  cugraph::c_api::pagerank_functor functor(handle,
-                                           graph,
-                                           precomputed_vertex_out_weight_sums,
-                                           personalization_vertices,
-                                           personalization_values,
-                                           alpha,
-                                           epsilon,
-                                           max_iterations,
-                                           has_initial_guess,
-                                           do_expensive_check);
+  *result = nullptr;
+  *error  = nullptr;
 
-  return cugraph::c_api::run_algorithm(graph, functor, result, error);
+  try {
+    auto p_handle = reinterpret_cast<raft::handle_t const*>(handle);
+    auto p_graph  = reinterpret_cast<cugraph::c_api::cugraph_graph_t*>(graph);
+
+    auto p_precomputed_vertex_out_weight_sums =
+      reinterpret_cast<cugraph::c_api::cugraph_type_erased_device_array_t const*>(
+        precomputed_vertex_out_weight_sums);
+    auto p_personalization_vertices =
+      reinterpret_cast<cugraph::c_api::cugraph_type_erased_device_array_t*>(
+        personalization_vertices);
+    auto p_personalization_values =
+      reinterpret_cast<cugraph::c_api::cugraph_type_erased_device_array_t const*>(
+        personalization_vertices);
+
+    cugraph::c_api::pagerank_functor functor(*p_handle,
+                                             p_graph,
+                                             p_precomputed_vertex_out_weight_sums,
+                                             p_personalization_vertices,
+                                             p_personalization_values,
+                                             alpha,
+                                             epsilon,
+                                             max_iterations,
+                                             has_initial_guess,
+                                             do_expensive_check);
+
+    cugraph::dispatch::vertex_dispatcher(cugraph::c_api::dtypes_mapping[p_graph->vertex_type_],
+                                         cugraph::c_api::dtypes_mapping[p_graph->edge_type_],
+                                         cugraph::c_api::dtypes_mapping[p_graph->weight_type_],
+                                         p_graph->store_transposed_,
+                                         p_graph->multi_gpu_,
+                                         functor);
+
+    if (functor.error_code_ != CUGRAPH_SUCCESS) {
+      *error = reinterpret_cast<cugraph_error_t*>(functor.error_.release());
+      return functor.error_code_;
+    }
+
+    *result = reinterpret_cast<cugraph_pagerank_result_t*>(functor.result_);
+  } catch (std::exception const& ex) {
+    *error = reinterpret_cast<cugraph_error_t*>(new cugraph::c_api::cugraph_error_t{ex.what()});
+    return CUGRAPH_UNKNOWN_ERROR;
+  }
+
+  return CUGRAPH_SUCCESS;
 }

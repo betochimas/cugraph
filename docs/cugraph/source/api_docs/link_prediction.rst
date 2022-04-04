@@ -10,9 +10,9 @@ Jaccard Coefficient
 .. autosummary::
    :toctree: api/
 
-   cugraph.jaccard
-   cugraph.jaccard_coefficient
-   cugraph.jaccard_w
+   cugraph.link_prediction.jaccard.jaccard
+   cugraph.link_prediction.jaccard.jaccard_coefficient
+   cugraph.link_prediction.wjaccard.jaccard_w
 
 
 Overlap Coefficient
@@ -20,16 +20,15 @@ Overlap Coefficient
 .. autosummary::
    :toctree: api/
 
-   cugraph.overlap
-   cugraph.overlap_coefficient
-   cugraph.overlap_w
+   cugraph.link_prediction.overlap.overlap
+   cugraph.link_prediction.overlap.overlap_coefficient
+   cugraph.link_prediction.woverlap.overlap_w
 
 
-Sorensen Coefficient
---------------------
+Pagerank (MG)
+-------------
 .. autosummary::
    :toctree: api/
 
-   cugraph.sorensen
-   cugraph.sorensen_coefficient
-   cugraph.sorensen_w
+   cugraph.dask.link_analysis.pagerank.pagerank
+
