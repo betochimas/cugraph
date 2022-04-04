@@ -10,7 +10,7 @@ Core Number
 .. autosummary::
    :toctree: api/
 
-   cugraph.core_number
+   cugraph.cores.core_number.core_number
 
 
 K-Core
@@ -18,4 +18,4 @@ K-Core
 .. autosummary::
    :toctree: api/
 
-   cugraph.k_core
+   cugraph.centrality.katz_centrality.katz_centrality

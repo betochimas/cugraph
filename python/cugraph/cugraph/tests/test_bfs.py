@@ -1,4 +1,4 @@
-# Copyright (c) 2019-2022, NVIDIA CORPORATION.
+# Copyright (c) 2019-2021, NVIDIA CORPORATION.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -58,6 +58,7 @@ DEPTH_LIMITS = [None, 1, 5, 18]
 # connected_components calls.
 cuGraph_input_output_map = {
     cugraph.Graph: cudf.DataFrame,
+    cugraph.DiGraph: cudf.DataFrame,
     nx.Graph: pd.DataFrame,
     nx.DiGraph: pd.DataFrame,
     cp_coo_matrix: tuple,
@@ -201,14 +202,14 @@ def _compare_bfs(cugraph_df, nx_distances, source):
     cu_distances = {
         vertex: dist
         for vertex, dist in zip(
-            cugraph_df["vertex"].to_numpy(), cugraph_df["distance"].to_numpy()
+            cugraph_df["vertex"].to_array(), cugraph_df["distance"].to_array()
         )
     }
     cu_predecessors = {
         vertex: dist
         for vertex, dist in zip(
-                cugraph_df["vertex"].to_numpy(),
-                cugraph_df["predecessor"].to_numpy()
+                cugraph_df["vertex"].to_array(),
+                cugraph_df["predecessor"].to_array()
         )
     }
 
@@ -383,10 +384,10 @@ def test_bfs(gpubenchmark, dataset_nxresults_startvertex_spc,
     # special case: ensure cugraph and Nx Graph types are DiGraphs if
     # "directed" is set, since the graph type parameterization is currently
     # independent of the directed parameter. Unfortunately this does not
-    # change the "id" in the pytest output. Ignore for nonnative inputs
+    # change the "id" in the pytest output.
     if directed:
-        if isinstance(cugraph_input_type, cugraph.Graph):
-            cugraph_input_type = cugraph.Graph(directed=True)
+        if cugraph_input_type is cugraph.Graph:
+            cugraph_input_type = cugraph.DiGraph
         elif cugraph_input_type is nx.Graph:
             cugraph_input_type = nx.DiGraph
 

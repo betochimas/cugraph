@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2022, NVIDIA CORPORATION.
+# Copyright (c) 2020-2021, NVIDIA CORPORATION.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -45,63 +45,49 @@ def force_atlas2(
             cuGraph graph descriptor with connectivity information.
             Edge weights, if present, should be single or double precision
             floating point values.
-
-        max_iter : integer, optional (default=500)
+        max_iter : integer
             This controls the maximum number of levels/iterations of the Force
             Atlas algorithm. When specified the algorithm will terminate after
             no more than the specified number of iterations.
             No error occurs when the algorithm terminates in this manner.
             Good short-term quality can be achieved with 50-100 iterations.
             Above 1000 iterations is discouraged.
-
-        pos_list: cudf.DataFrame, optional (default=None)
+        pos_list: cudf.DataFrame
             Data frame with initial vertex positions containing two columns:
             'x' and 'y' positions.
-
-        outbound_attraction_distribution: bool, optional (default=True)
+        outbound_attraction_distribution: bool
             Distributes attraction along outbound edges.
             Hubs attract less and thus are pushed to the borders.
-
-        lin_log_mode: bool, optional (default=False)
+        lin_log_mode: bool
             Switch Force Atlas model from lin-lin to lin-log.
             Makes clusters more tight.
-
-        prevent_overlapping: bool, optional (default=False)
+        prevent_overlapping: bool
             Prevent nodes to overlap.
-
-        edge_weight_influence: float, optional (default=1.0)
+        edge_weight_influence: float
             How much influence you give to the edges weight.
             0 is “no influence” and 1 is “normal”.
-
-        jitter_tolerance: float, optional (default=1.0)
+        jitter_tolerance: float
             How much swinging you allow. Above 1 discouraged.
             Lower gives less speed and more precision.
-
-        barnes_hut_optimize: bool, optional (default=True)
+        barnes_hut_optimize: bool
             Whether to use the Barnes Hut approximation or the slower
             exact version.
-
-        barnes_hut_theta: float, optional (default=0.5)
+        barnes_hut_theta: float
             Float between 0 and 1. Tradeoff for speed (1) vs
             accuracy (0) for Barnes Hut only.
-
-        scaling_ratio: float, optional (default=2.0)
+        scaling_ratio: float
             How much repulsion you want. More makes a more sparse graph.
             Switching from regular mode to LinLog mode needs a readjustment
             of the scaling parameter.
-
-        strong_gravity_mode: bool, optional (default=False)
+        strong_gravity_mode: bool
             Sets a force that attracts the nodes that are distant from the
             center more. It is so strong that it can sometimes dominate other
             forces.
-
-        gravity : float, optional (default=1.0)
+        gravity : float
             Attracts nodes to the center. Prevents islands from drifting away.
-
-        verbose: bool, optional (default=False)
+        verbose: bool
             Output convergence info at each interation.
-
-        callback: GraphBasedDimRedCallback, optional (default=None)
+        callback: GraphBasedDimRedCallback
             An instance of GraphBasedDimRedCallback class to intercept
             the internal state of positions while they are being trained.
 
@@ -120,16 +106,6 @@ def force_atlas2(
         pos : cudf.DataFrame
             GPU data frame of size V containing three columns:
             the vertex identifiers and the x and y positions.
-
-        Examples
-        --------
-        >>> gdf = cudf.read_csv(datasets_path / 'karate.csv', delimiter=' ',
-        ...                     dtype=['int32', 'int32', 'float32'],
-        ...                     header=None)
-        >>> G = cugraph.Graph()
-        >>> G.from_cudf_edgelist(gdf, source='0', destination='1')
-        >>> pos = cugraph.force_atlas2(G)
-
     """
     input_graph, isNx = ensure_cugraph_obj_for_nx(input_graph)
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2019-2022, NVIDIA CORPORATION.
+# Copyright (c) 2019-2021, NVIDIA CORPORATION.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -104,15 +104,10 @@ from cugraph.proto.structure import find_bicliques
 
 from cugraph.linear_assignment import hungarian, dense_hungarian
 from cugraph.layout import force_atlas2
-from raft import raft_include_test
+from cugraph.raft import raft_include_test
 from cugraph.comms import comms
 
-from cugraph.sampling import random_walks, rw_path, node2vec
-
-from cugraph import experimental
-
-from cugraph import gnn
-
+from cugraph.sampling import random_walks, rw_path
 
 # Versioneer
 from ._version import get_versions

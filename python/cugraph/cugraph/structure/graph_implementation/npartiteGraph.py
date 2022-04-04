@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2022, NVIDIA CORPORATION.
+# Copyright (c) 2021, NVIDIA CORPORATION.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -63,17 +63,16 @@ class npartiteGraphImpl(simpleGraphImpl):
     def add_nodes_from(self, nodes, bipartite=None, multipartite=None):
         """
         Add nodes information to the Graph.
-
         Parameters
         ----------
         nodes : list or cudf.Series
             The nodes of the graph to be stored. If bipartite and multipartite
             arguments are not passed, the nodes are considered to be a list of
             all the nodes present in the Graph.
-        bipartite : str, optional (default=None)
+        bipartite : str
             Sets the Graph as bipartite. The nodes are stored as a set of nodes
             of the partition named as bipartite argument.
-        multipartite : str, optional (default=None)
+        multipartite : str
             Sets the Graph as multipartite. The nodes are stored as a set of
             nodes of the partition named as multipartite argument.
         """

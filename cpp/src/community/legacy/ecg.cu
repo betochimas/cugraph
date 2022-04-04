@@ -20,8 +20,8 @@
 #include <cugraph/utilities/error.hpp>
 #include <utilities/graph_utils.cuh>
 
-#include <rmm/exec_policy.hpp>
 #include <thrust/random.h>
+#include <rmm/exec_policy.hpp>
 
 #include <ctime>
 
@@ -116,10 +116,12 @@ class EcgLouvain : public cugraph::legacy::Louvain<graph_type> {
 
   void initialize_dendrogram_level(vertex_t num_vertices) override
   {
-    this->dendrogram_->add_level(0, num_vertices, this->handle_.get_stream());
+    this->dendrogram_->add_level(0, num_vertices, this->handle_.get_stream_view());
 
-    get_permutation_vector(
-      num_vertices, seed_, this->dendrogram_->current_level_begin(), this->handle_.get_stream());
+    get_permutation_vector(num_vertices,
+                           seed_,
+                           this->dendrogram_->current_level_begin(),
+                           this->handle_.get_stream_view());
   }
 
  private:
@@ -145,7 +147,7 @@ void ecg(raft::handle_t const& handle,
                   "Invalid input argument: clustering is NULL, should be a device pointer to "
                   "memory for storing the result");
 
-  rmm::device_uvector<weight_t> ecg_weights_v(graph.number_of_edges, handle.get_stream());
+  rmm::device_uvector<weight_t> ecg_weights_v(graph.number_of_edges, handle.get_stream_view());
 
   thrust::copy(handle.get_thrust_policy(),
                graph.edge_data,

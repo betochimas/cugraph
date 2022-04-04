@@ -10,4 +10,4 @@ Random Walks
 .. autosummary::
    :toctree: api/
 
-   cugraph.random_walks
+   cugraph.sampling.random_walks.random_walks

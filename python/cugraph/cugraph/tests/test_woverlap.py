@@ -39,14 +39,14 @@ def cugraph_call(benchmark_callable, cu_M, pairs):
     weights['vertex'] = np.arange(len(weights_arr), dtype=np.int32)
     weights['weight'] = weights_arr
 
-    G = cugraph.Graph(directed=True)
+    G = cugraph.DiGraph()
     G.from_cudf_edgelist(cu_M, source="0", destination="1")
 
     # cugraph Overlap Call
     df = benchmark_callable(cugraph.overlap_w, G, weights, pairs)
 
     df = df.sort_values(by=["source", "destination"])
-    return df["overlap_coeff"].to_numpy()
+    return df["overlap_coeff"].to_array()
 
 
 def intersection(a, b, M):

@@ -10,8 +10,8 @@ Breadth-first-search
 .. autosummary::
    :toctree: api/
 
-   cugraph.bfs
-   cugraph.bfs_edges
+   cugraph.traversal.bfs.bfs
+   cugraph.traversal.bfs.bfs_edges
 
 Breadth-first-search (MG)
 -------------------------
@@ -21,15 +21,16 @@ Breadth-first-search (MG)
    cugraph.dask.traversal.bfs.bfs
    cugraph.dask.traversal.bfs.call_bfs
 
+
 Single-source-shortest-path
 ---------------------------
 .. autosummary::
    :toctree: api/
 
-   cugraph.filter_unreachable
-   cugraph.shortest_path
-   cugraph.shortest_path_length
-   cugraph.sssp
+   cugraph.traversal.sssp.filter_unreachable
+   cugraph.traversal.sssp.shortest_path
+   cugraph.traversal.sssp.shortest_path_length
+   cugraph.traversal.sssp.sssp
 
 Single-source-shortest-path (MG)
 --------------------------------

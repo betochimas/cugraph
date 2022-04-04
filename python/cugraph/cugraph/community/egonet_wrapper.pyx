@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2022, NVIDIA CORPORATION.
+# Copyright (c) 2021, NVIDIA CORPORATION.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -25,11 +25,9 @@ from cugraph.structure.graph_utilities cimport (populate_graph_container,
                                                 move as graph_utils_move,
                                                 )
 from cugraph.structure.graph_primtypes cimport move_device_buffer_to_column
-from raft.common.handle cimport handle_t
+from cugraph.raft.common.handle cimport handle_t
 from cugraph.structure import graph_primtypes_wrapper
 from cugraph.community.egonet cimport call_egonet
-from raft.common.handle cimport handle_t
-from raft.common.handle import Handle
 
 
 def egonet(input_graph, vertices, radius=1):
@@ -75,8 +73,8 @@ def egonet(input_graph, vertices, radius=1):
     if n_subgraphs > 1 :
         n_streams = min(n_subgraphs, 32)
     cdef unique_ptr[handle_t] handle_ptr
-    handle = Handle(n_streams=n_streams)
-    cdef handle_t* handle_ = <handle_t*><size_t> handle.getHandle()
+    handle_ptr.reset(new handle_t(n_streams))
+    handle_ = handle_ptr.get();
 
     cdef graph_container_t graph_container
     populate_graph_container(graph_container,

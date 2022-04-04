@@ -10,15 +10,15 @@ EgoNet
 .. autosummary::
    :toctree: api/
 
-   cugraph.batched_ego_graphs
-   cugraph.ego_graph
+   cugraph.community.egonet.batched_ego_graphs
+   cugraph.community.egonet.ego_graph
 
 Ensemble clustering for graphs (ECG)
 ------------------------------------
 .. autosummary::
    :toctree: api/
 
-   cugraph.ecg
+   cugraph.community.ecg.ecg
 
 
 K-Truss
@@ -26,15 +26,15 @@ K-Truss
 .. autosummary::
    :toctree: api/
 
-   cugraph.k_truss
-   cugraph.ktruss_subgraph
+   cugraph.community.ktruss_subgraph.k_truss
+   cugraph.community.ktruss_subgraph.ktruss_subgraph
 
 Leiden
 ------
 .. autosummary::
    :toctree: api/
 
-   cugraph.leiden
+   cugraph.community.leiden.leiden
 
 
 Louvain
@@ -42,7 +42,7 @@ Louvain
 .. autosummary::
    :toctree: api/
 
-   cugraph.louvain
+   cugraph.community.louvain.louvain
 
 
 Louvain (MG)
@@ -51,18 +51,18 @@ Louvain (MG)
    :toctree: api/
 
    cugraph.dask.community.louvain.call_louvain
-   cugraph.dask.community.louvain.louvain
+   cugraph.community.ktruss_subgraph.ktruss_subgraph
 
 Spectral Clustering
 -------------------
 .. autosummary::
    :toctree: api/
 
-   cugraph.analyzeClustering_edge_cut
-   cugraph.analyzeClustering_modularity
-   cugraph.analyzeClustering_ratio_cut
-   cugraph.spectralBalancedCutClustering
-   cugraph.spectralModularityMaximizationClustering
+   cugraph.community.spectral_clustering.analyzeClustering_edge_cut
+   cugraph.community.spectral_clustering.analyzeClustering_modularity
+   cugraph.community.spectral_clustering.analyzeClustering_ratio_cut
+   cugraph.community.spectral_clustering.spectralBalancedCutClustering
+   cugraph.community.spectral_clustering.spectralModularityMaximizationClustering
 
 
 Subgraph Extraction
@@ -70,7 +70,7 @@ Subgraph Extraction
 .. autosummary::
    :toctree: api/
 
-   cugraph.subgraph
+   cugraph.community.subgraph_extraction.subgraph
 
 
 Triangle Counting
@@ -78,4 +78,4 @@ Triangle Counting
 .. autosummary::
    :toctree: api/
 
-   cugraph.triangles
+   cugraph.community.triangle_count.triangles

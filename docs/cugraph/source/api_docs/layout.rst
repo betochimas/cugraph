@@ -10,5 +10,5 @@ Force Atlas 2
 .. autosummary::
    :toctree: api/
 
-   cugraph.force_atlas2
+   cugraph.layout.force_atlas2.force_atlas2
 

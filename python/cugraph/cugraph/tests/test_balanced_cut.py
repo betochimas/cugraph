@@ -1,4 +1,4 @@
-# Copyright (c) 2019-2022, NVIDIA CORPORATION.
+# Copyright (c) 2019-2021, NVIDIA CORPORATION.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -30,7 +30,7 @@ def cugraph_call(G, partitions):
     score = cugraph.analyzeClustering_edge_cut(
         G, partitions, df, 'vertex', 'cluster'
     )
-    return set(df["vertex"].to_numpy()), score
+    return set(df["vertex"].to_array()), score
 
 
 def random_call(G, partitions):
@@ -114,8 +114,7 @@ def test_digraph_rejected():
     df["dst"] = cudf.Series(range(10))
     df["val"] = cudf.Series(range(10))
 
-    with pytest.deprecated_call():
-        G = cugraph.DiGraph()
+    G = cugraph.DiGraph()
     G.from_cudf_edgelist(
         df, source="src", destination="dst", edge_attr="val", renumber=False
     )
@@ -150,7 +149,7 @@ def test_edge_cut_clustering_with_edgevals_nx(graph_file, partitions):
         G, partitions, gdf, 'vertex', 'cluster'
     )
 
-    df = set(gdf["vertex"].to_numpy())
+    df = set(gdf["vertex"].to_array())
 
     Gcu = cugraph.utilities.convert_from_nx(G)
     rand_vid, rand_score = random_call(Gcu, partitions)

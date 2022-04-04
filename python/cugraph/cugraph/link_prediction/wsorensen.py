@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2022, NVIDIA CORPORATION.
+# Copyright (c) 2021, NVIDIA CORPORATION.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -26,7 +26,7 @@ def sorensen_w(input_graph, weights, vertex_pair=None):
 
     Parameters
     ----------
-    input_graph : cugraph.Graph
+    graph : cugraph.Graph
         cuGraph Graph instance, should contain the connectivity information
         as an edge list (edge weights are not used for this algorithm). The
         adjacency list will be computed if not already present.
@@ -41,7 +41,7 @@ def sorensen_w(input_graph, weights, vertex_pair=None):
         weights['weight'] : cudf.Series
             Contains the weights of vertices
 
-    vertex_pair : cudf.DataFrame, optional (default=None)
+    vertex_pair : cudf.DataFrame
         A GPU dataframe consisting of two columns representing pairs of
         vertices. If provided, the sorensen coefficient is computed for the
         given vertex pairs, else, it is computed for all vertex pairs.
@@ -64,9 +64,8 @@ def sorensen_w(input_graph, weights, vertex_pair=None):
 
     Examples
     --------
-    >>> import random
-    >>> M = cudf.read_csv(datasets_path / 'karate.csv', delimiter=' ',
-    ...                   dtype=['int32', 'int32', 'float32'], header=None)
+    >>> M = cudf.read_csv('datasets/karate.csv', delimiter=' ',
+    >>>                   dtype=['int32', 'int32', 'float32'], header=None)
     >>> G = cugraph.Graph()
     >>> G.from_cudf_edgelist(M, source='0', destination='1')
     >>> # Create a dataframe containing the vertices with their
@@ -80,9 +79,8 @@ def sorensen_w(input_graph, weights, vertex_pair=None):
     >>> weights.reset_index(inplace=True, drop=True)
     >>> # Create a weight column with random weights
     >>> weights['weight'] = [random.random() for w in range(
-    ...                      len(weights['vertex']))]
+    >>>                      len(weights['vertex']))]
     >>> df = cugraph.sorensen_w(G, weights)
-
     """
     if type(input_graph) is not Graph:
         raise TypeError("input graph must a Graph")

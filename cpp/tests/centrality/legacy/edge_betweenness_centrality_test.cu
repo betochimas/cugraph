@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2022, NVIDIA CORPORATION.
+ * Copyright (c) 2020-2021, NVIDIA CORPORATION.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@
 
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
+
+#include <gmock/gmock.h>
 
 #include <cugraph/algorithms.hpp>
 #include <cugraph/legacy/graph.hpp>
@@ -251,7 +253,7 @@ class Tests_EdgeBC : public ::testing::TestWithParam<EdgeBC_Usecase> {
     cudaDeviceSynchronize();
     cugraph::legacy::GraphCSRView<vertex_t, edge_t, weight_t> G = csr->view();
     G.prop.directed                                             = is_directed;
-    RAFT_CUDA_TRY(cudaGetLastError());
+    CUDA_TRY(cudaGetLastError());
     std::vector<result_t> result(G.number_of_edges, 0);
     std::vector<result_t> expected(G.number_of_edges, 0);
 
@@ -282,10 +284,10 @@ class Tests_EdgeBC : public ::testing::TestWithParam<EdgeBC_Usecase> {
                                          static_cast<weight_t*>(nullptr),
                                          configuration.number_of_sources_,
                                          sources_ptr);
-    RAFT_CUDA_TRY(cudaMemcpy(result.data(),
-                             d_result.data().get(),
-                             sizeof(result_t) * G.number_of_edges,
-                             cudaMemcpyDeviceToHost));
+    CUDA_TRY(cudaMemcpy(result.data(),
+                        d_result.data().get(),
+                        sizeof(result_t) * G.number_of_edges,
+                        cudaMemcpyDeviceToHost));
     for (int i = 0; i < G.number_of_edges; ++i)
       EXPECT_TRUE(compare_close(result[i], expected[i], TEST_EPSILON, TEST_ZERO_THRESHOLD))
         << "[MISMATCH] vaid = " << i << ", cugraph = " << result[i]
