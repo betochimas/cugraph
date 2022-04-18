@@ -83,3 +83,12 @@ Other
    cugraph.hypergraph
    cugraph.structure.shuffle
    cugraph.structure.NumberMap
+
+Graph Implementation
+------------------------------
+.. autosummary::
+   :toctree: api/
+
+   cugraph.structure.graph_implementation.npartiteGraphImpl
+   cugraph.structure.graph_implementation.simpleDistributedGraphImpl
+   cugraph.structure.graph_implementation.simpleGraphImpl

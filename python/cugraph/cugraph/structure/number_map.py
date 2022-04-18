@@ -45,8 +45,11 @@ def call_renumber(sID,
 
 
 class NumberMap:
+    "A Number Map for relabeled vertex ids."
 
     class SingleGPU:
+        "Used when using a single GPU."
+
         def __init__(self, df, src_col_names, dst_col_names, id_type,
                      store_transposed):
             self.col_names = NumberMap.compute_vals(src_col_names)
@@ -167,6 +170,8 @@ class NumberMap:
             return tmp_df
 
     class MultiGPU:
+        "Used when using multiple GPUs."
+
         def __init__(
             self, ddf, src_col_names, dst_col_names, id_type, store_transposed
         ):
