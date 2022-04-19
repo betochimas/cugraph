@@ -11,12 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from raft.dask.common.comms import Comms as raftComms
-from raft.dask.common.comms import get_raft_comm_state
-from raft.common.handle import Handle
-from cugraph.comms.comms_wrapper import init_subcomms as c_init_subcomms
-from dask.distributed import default_client
-from cugraph.dask.common import read_utils
+try:
+    from raft.dask.common.comms import Comms as raftComms
+    from raft.dask.common.comms import get_raft_comm_state
+    from raft.common.handle import Handle
+    from cugraph.comms.comms_wrapper import init_subcomms as c_init_subcomms
+    from dask.distributed import default_client
+    from cugraph.dask.common import read_utils
+except ModuleNotFoundError:
+    raftComms = None
+
 import math
 
 

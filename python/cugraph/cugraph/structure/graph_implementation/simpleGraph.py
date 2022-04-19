@@ -11,14 +11,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cugraph.structure import graph_primtypes_wrapper
-from cugraph.structure.graph_primtypes_wrapper import Direction
+# from cugraph.structure import graph_primtypes_wrapper
+# from cugraph.structure.graph_primtypes_wrapper import Direction
 from cugraph.structure.symmetrize import symmetrize
 from cugraph.structure.number_map import NumberMap
-import cugraph.dask.common.mg_utils as mg_utils
+# import cugraph.dask.common.mg_utils as mg_utils
 import cudf
 import dask_cudf
-import cugraph.comms.comms as Comms
+# import cugraph.comms.comms as Comms
 import pandas as pd
 import numpy as np
 from cugraph.dask.structure import replication
@@ -73,10 +73,10 @@ class simpleGraphImpl:
 
         # TODO: Move to new batch class
         # MG - Batch
-        self.batch_enabled = False
-        self.batch_edgelists = None
-        self.batch_adjlists = None
-        self.batch_transposed_adjlists = None
+        # self.batch_enabled = False
+        # self.batch_edgelists = None
+        # self.batch_adjlists = None
+        # self.batch_transposed_adjlists = None
 
     # Functions
     # FIXME: Change to public function
@@ -175,8 +175,10 @@ class simpleGraphImpl:
         self.edgelist = simpleGraphImpl.EdgeList(source_col, dest_col,
                                                  value_col)
 
+        """
         if self.batch_enabled:
             self._replicate_edgelist()
+        """
 
     def to_pandas_edgelist(self, source='source', destination='destination'):
         """
@@ -262,9 +264,11 @@ class simpleGraphImpl:
                 Column is only present for weighted Graph,
                 then containing the weight value for each edge
         """
+        """
         if self.edgelist is None:
             src, dst, weights = graph_primtypes_wrapper.view_edge_list(self)
             self.edgelist = self.EdgeList(src, dst, weights)
+        """
 
         edgelist_df = self.edgelist.edgelist_df
 
@@ -291,8 +295,10 @@ class simpleGraphImpl:
         self.adjlist = simpleGraphImpl.AdjList(offset_col, index_col,
                                                value_col)
 
+        """
         if self.batch_enabled:
             self._replicate_adjlist()
+        """
 
     def view_adj_list(self):
         """
@@ -329,12 +335,16 @@ class simpleGraphImpl:
                     self.transposedadjlist.indices,
                     self.transposedadjlist.weights,
                 )
+            """
             else:
                 off, ind, vals = graph_primtypes_wrapper.view_adj_list(self)
+            """
             self.adjlist = self.AdjList(off, ind, vals)
 
+            """
             if self.batch_enabled:
                 self._replicate_adjlist()
+            """
 
         return self.adjlist.offsets, self.adjlist.indices, self.adjlist.weights
 
@@ -372,6 +382,7 @@ class simpleGraphImpl:
                     self.adjlist.indices,
                     self.adjlist.weights,
                 )
+            """
             else:
                 (
                     off,
@@ -382,6 +393,7 @@ class simpleGraphImpl:
 
             if self.batch_enabled:
                 self._replicate_transposed_adjlist()
+            """
 
         return (
             self.transposedadjlist.offsets,
@@ -396,6 +408,7 @@ class simpleGraphImpl:
         self.adjlist = None
 
     # FIXME: Update batch workflow and refactor to suitable file
+    """
     def enable_batch(self):
         client = mg_utils.get_client()
         comms = Comms.get_comms()
@@ -465,6 +478,7 @@ class simpleGraphImpl:
     # FIXME: Not implemented yet
     def _replicate_transposed_adjlist(self):
         self.batch_transposed_adjlists = True
+    """
 
     def get_two_hop_neighbors(self):
         """
@@ -481,7 +495,7 @@ class simpleGraphImpl:
                 the second vertex id of a pair, if an external vertex id
                 is defined by only one column
         """
-
+        """
         df = graph_primtypes_wrapper.get_two_hop_neighbors(self)
 
         if self.properties.renumbered is True:
@@ -489,6 +503,9 @@ class simpleGraphImpl:
             df = self.renumber_map.unrenumber(df, "second")
 
         return df
+        """
+        return None
+
 
     def number_of_vertices(self):
         """
@@ -657,7 +674,7 @@ class simpleGraphImpl:
         return self._degree(vertex_subset)
 
     # FIXME:  vertex_subset could be a DataFrame for multi-column vertices
-    def degrees(self, vertex_subset=None):
+    # def degrees(self, vertex_subset=None):
         """
         Compute vertex in-degree and out-degree. By default, this method
         computes vertex degrees for the entire set of vertices. If
@@ -693,7 +710,6 @@ class simpleGraphImpl:
         >>> G.from_cudf_edgelist(M, '0', '1')
         >>> df = G.degrees([0,9,12])
 
-        """
         (
             vertex_col,
             in_degree_col,
@@ -712,7 +728,9 @@ class simpleGraphImpl:
             df = df[df['vertex'].isin(vertex_subset)]
 
         return df
+        """
 
+    """
     def _degree(self, vertex_subset, direction=Direction.ALL):
         vertex_col, degree_col = graph_primtypes_wrapper._degree(self,
                                                                  direction)
@@ -727,6 +745,7 @@ class simpleGraphImpl:
             df = df[df['vertex'].isin(vertex_subset)]
 
         return df
+    """
 
     def to_directed(self, DiG):
         """

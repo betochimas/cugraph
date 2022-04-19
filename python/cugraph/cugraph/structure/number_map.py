@@ -22,7 +22,10 @@ import cudf
 
 from cugraph.dask.common.input_utils import get_distributed_data
 from cugraph.structure import renumber_wrapper as c_renumber
-import cugraph.comms.comms as Comms
+try:
+    import cugraph.comms.comms as Comms
+except ModuleNotFoundError:
+    Comms = None
 
 
 def call_renumber(sID,

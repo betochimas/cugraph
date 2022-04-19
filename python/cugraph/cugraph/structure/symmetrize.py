@@ -14,7 +14,7 @@
 from cugraph.structure import graph_classes as csg
 import cudf
 import dask_cudf
-from cugraph.comms import comms as Comms
+# from cugraph.comms import comms as Comms
 
 
 def symmetrize_df(df, src_name, dst_name, multi=False, symmetrize=True):
@@ -90,7 +90,7 @@ def symmetrize_df(df, src_name, dst_name, multi=False, symmetrize=True):
         return gdf.groupby(by=[src_name, dst_name], as_index=False).min()
 
 
-def symmetrize_ddf(df, src_name, dst_name, weight_name=None):
+# def symmetrize_ddf(df, src_name, dst_name, weight_name=None):
     """
     Take a COO stored in a distributed DataFrame, and the column names of
     the source and destination columns and create a new data frame
@@ -140,7 +140,7 @@ def symmetrize_ddf(df, src_name, dst_name, weight_name=None):
 
     """
     # FIXME: Uncomment out the above (broken) example
-
+    """
     if weight_name:
         ddf2 = df[[dst_name, src_name, weight_name]]
         ddf2.columns = [src_name, dst_name, weight_name]
@@ -156,6 +156,7 @@ def symmetrize_ddf(df, src_name, dst_name, weight_name=None):
         by=[src_name, dst_name], as_index=False).min().reset_index(drop=True))
 
     return result
+    """
 
 
 def symmetrize(source_col, dest_col, value_col=None, multi=False,
