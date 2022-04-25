@@ -28,7 +28,8 @@ except ModuleNotFoundError:
 # depending on the import environment, cugraph/comms/__init__.py
 # may be imported instead. The following imports the comms.py
 # module directly
-from cugraph.comms import comms as Comms
+#from cugraph.comms import comms as Comms
+from cugraph.dask.comms import comms as Comms
 
 
 # FIXME: We currently look for the default client from dask, as such is the

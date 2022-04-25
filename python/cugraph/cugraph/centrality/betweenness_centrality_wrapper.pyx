@@ -22,7 +22,8 @@ from libc.stdint cimport uintptr_t
 from libcpp cimport bool
 import cudf
 import numpy as np
-import cugraph.comms.comms as Comms
+#import cugraph.comms.comms as Comms
+import cugraph.dask.comms.comms as Comms
 from cugraph.dask.common.mg_utils import get_client
 import dask.distributed
 

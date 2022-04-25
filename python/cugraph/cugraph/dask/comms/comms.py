@@ -20,7 +20,8 @@ except ModuleNotFoundError:
     raftComms = None
     get_raft_comm_state = None
 from raft.common.handle import Handle
-from cugraph.comms.comms_wrapper import init_subcomms as c_init_subcomms
+#from cugraph.comms.comms_wrapper import init_subcomms as c_init_subcomms
+from cugraph.dask.comms.comms_wrapper import init_subcomms as c_init_subcomms
 from dask.distributed import default_client
 from cugraph.dask.common import read_utils
 import math
