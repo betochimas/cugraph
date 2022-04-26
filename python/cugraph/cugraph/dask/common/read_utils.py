@@ -48,5 +48,5 @@ def get_chunksize(input_path):
 
 class MissingUCXPy:
     def __getattr__(self, *args, **kwargs):
-        raise ModuleNotFoundError(f"ucx-py could not be imported but is "
-                                  f"required for MG operations")
+        raise ModuleNotFoundError("ucx-py could not be imported but is"
+                                  " required for MG operations")

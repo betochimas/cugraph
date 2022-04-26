@@ -13,7 +13,7 @@
 
 from dask.dataframe.shuffle import rearrange_by_column
 import cudf
-#import cugraph.comms.comms as Comms
+# import cugraph.comms.comms as Comms
 import cugraph.dask.comms.comms as Comms
 
 

@@ -14,7 +14,7 @@
 from cugraph.structure import graph_classes as csg
 import cudf
 import dask_cudf
-#import cugraph.comms.comms as Comms
+# import cugraph.comms.comms as Comms
 import cugraph.dask.comms.comms as Comms
 
 

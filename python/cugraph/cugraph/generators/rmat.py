@@ -15,7 +15,7 @@ from dask.distributed import default_client
 import dask_cudf
 
 from cugraph.generators import rmat_wrapper
-#import cugraph.comms.comms as Comms
+# import cugraph.comms.comms as Comms
 import cugraph.dask.comms.comms as Comms
 import cugraph
 
