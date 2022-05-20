@@ -74,7 +74,8 @@ def test_to_from_pandas(graph_file):
 
     exp_pdf = exp_pdf.rename(columns={"source": "src", "target": "dst",
                                       "weight": "weights"})
-
+    res_pdf = res_pdf.rename(columns={"source": "src", "destination": "dst"})
+    # breakpoint()
     exp_pdf = exp_pdf.sort_values(by=["src", "dst"]).reset_index(drop=True)
     res_pdf = res_pdf.sort_values(by=["src", "dst"]).reset_index(drop=True)
     res_pdf = res_pdf[['src', 'dst', 'weights']]
@@ -123,6 +124,7 @@ def test_from_to_numpy(graph_file):
 
     exp_pdf = exp_pdf.rename(columns={"source": "src", "target": "dst",
                                       "weight": "weights"})
+    res_pdf = res_pdf.rename(columns={"source": "src", "destination": "dst"})
 
     exp_pdf = exp_pdf.sort_values(by=["src", "dst"]).reset_index(drop=True)
     res_pdf = res_pdf.sort_values(by=["src", "dst"]).reset_index(drop=True)
@@ -142,6 +144,7 @@ def test_from_to_numpy(graph_file):
 
     exp_pdf = exp_pdf.rename(columns={"source": "src", "target": "dst",
                                       "weight": "weights"})
+    res_pdf = res_pdf.rename(columns={"source": "src", "destination": "dst"})
 
     exp_pdf = exp_pdf.sort_values(by=["src", "dst"]).reset_index(drop=True)
     res_pdf = res_pdf.sort_values(by=["src", "dst"]).reset_index(drop=True)
