@@ -16,15 +16,11 @@ import gc
 import pytest
 import cugraph
 import cudf
-from cugraph.testing import utils
+# from cugraph.testing import utils
 
-import networkx as nx
+from cugraph.experimental.datasets import (karate, dolphins, netscience, polbooks,
+                                           SMALL_DATASETS)
 
-from cugraph.experimental.datasets import dataset, SMALL_DATASETS
-from cugraph.experimental.datasets import karate
-from cugraph.experimental.datasets import netscience
-from cugraph.experimental.datasets import polbooks
-from cugraph.experimental.datasets import dolphins
 
 # =============================================================================
 # Pytest Setup / Teardown - called for each test function
@@ -32,44 +28,98 @@ from cugraph.experimental.datasets import dolphins
 def setup_function():
     gc.collect()
 
-import warnings
 
+import warnings
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     import networkx as nx
 
 
-# A simple example Dataset class working, MetaData
-# run thru an entire alg with imports
-# handle cases, like fetch, also maybe config options
-#config_file_path = "cugraph/cugraph/experimental/datasets/datasets_config.yaml"
-#with open(config_file_path, 'r') as file:
-#    config_settings = yaml.safe_load(file)
+@pytest.mark.parametrize("dataset", SMALL_DATASETS)
+def test_getters(dataset):
+    # Getting the graph does not need to depend on get_edgelist
+    M = dataset.get_edgelist(fetch=True)
 
-# @pytest.mark.parametrize("dataset", SMALL_DATASETS)
-# def test_getters(dataset):
-#     # Getting the graph does not need to depend on get_edgelist
-#     M = dataset.get_edgelist(fetch=True)
-#     #breakpoint()
-#     G = dataset.get_graph(fetch=True)
+    G = dataset.get_graph(fetch=True)
 
-#     # Storing the datasets in experimental/datasets/
+    assert M is not None
+    assert G is not None
 
 
-# Test the number of nodes and edges
-def test_karate_nodes():
-    #breakpoint()
+## TEST datasets.karate vs manually reading karate-data.csv
+#   Verify the number of nodes, edges, and is_directed
+def test_karate():
     graph_file = 'datasets/karate-data.csv'
     G_a = karate.get_graph(fetch=True)
-    
-    breakpoint()
+
     df = cudf.read_csv(
             graph_file,
             delimiter="\t",
+            names=["src", "dst"],
             dtype=["int32", "int32"],
             header=None,
         )
     G_b = cugraph.Graph(directed=True)
-    G_b.from_cudf_edgelist(G_a, source="src", destination="dst", renumber=False)
+    G_b.from_cudf_edgelist(df, source="src",
+                           destination="dst")
 
     assert G_a.number_of_nodes() == G_b.number_of_nodes()
+    assert G_a.number_of_edges() == G_b.number_of_edges()
+    assert G_a.is_directed() == G_b.is_directed()
+
+## TEST datasets.dolphins vs manually reading dolphins.csv
+def test_dolphins():
+    graph_file = 'datasets/dolphins.csv'
+    G_a = dolphins.get_graph(fetch=True)
+
+    df = cudf.read_csv(
+            graph_file,
+            delimiter=" ",
+            names=["src", "dst", "wgt"],
+            dtype=["int32", "int32", "float32"],
+            header=None,
+        )
+    G_b = cugraph.Graph(directed=True)
+    G_b.from_cudf_edgelist(df, source="src", destination="dst")
+
+    assert G_a.number_of_nodes() == G_b.number_of_nodes()
+    assert G_a.number_of_edges() == G_b.number_of_edges()
+    assert G_a.is_directed() == G_b.is_directed()
+
+## TEST datasets.netscience vs manually reading netscience.csv
+def test_netscience():
+    graph_file = 'datasets/netscience.csv'
+    G_a = netscience.get_graph(fetch=True)
+
+    df = cudf.read_csv(
+            graph_file,
+            delimiter=" ",
+            names=["src", "dst", "wgt"],
+            dtype=["int32", "int32", "float32"],
+            header=None,
+        )
+    G_b = cugraph.Graph(directed=False)
+    G_b.from_cudf_edgelist(df, source="src", destination="dst")
+
+    assert G_a.number_of_nodes() == G_b.number_of_nodes()
+    assert G_a.number_of_edges() == G_b.number_of_edges()
+    assert G_a.is_directed() == G_b.is_directed()
+
+## TEST datasets.polbooks vs manually reading polbooks.csv
+def tes_polbooks():
+    graph_file = 'datasets/polbooks.csv'
+    G_a = polbooks.get_graph(fetch=True)
+
+    df = cudf.read_csv(
+            graph_file,
+            delimiter=" ",
+            names=["src", "dst", "wgt"],
+            dtype=["int32", "int32", "float32"],
+            header=None,
+        )
+    G_b = cugraph.Graph(directed=False)
+    G_b.from_cudf_edgelist(df, source="src", destination="dst")
+
+    assert G_a.number_of_nodes() == G_b.number_of_nodes()
+    assert G_a.number_of_edges() == G_b.number_of_edges()
+    assert G_a.is_directed() == G_b.is_directed()
