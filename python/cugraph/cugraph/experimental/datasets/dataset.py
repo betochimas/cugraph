@@ -80,10 +80,11 @@ class Dataset:
             Automatically fetch for the dataset from the 'url' location within
             the YAML file.
         """
-        # breakpoint()
+        #breakpoint()
         if self.__edgelist is None:
             full_path = self.download_dir + self.metadata['name'] \
                             + self.metadata['file_type']
+
             if not os.path.isfile(full_path):
                 if fetch:
                     self.__download_csv(self.metadata['url'],
