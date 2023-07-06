@@ -15,6 +15,7 @@ import sys
 from tempfile import NamedTemporaryFile
 import math
 
+import pandas as pd
 import cudf
 from cupyx.scipy.sparse import coo_matrix as cupy_coo_matrix
 import cupy
@@ -174,13 +175,15 @@ def test_shortest_path_length_no_target(graphs):
 
     cugraph_path_1_to_all = cugraph.shortest_path_length(cugraph_G, 1)
     nx_path_1_to_all = resultset.get_paths_results("1,notarget,nx")
-    nx_gpu_path_1_to_all = resultset.get_paths_results("1,notarget,cu")
+    nx_gpu_path_1_to_all = pd.DataFrame.from_dict(
+        resultset.get_paths_results("1,notarget,cu")
+    )
     cupy_path_1_to_all = cugraph.shortest_path_length(cupy_df, 1)
 
     # Cast networkx graph on cugraph vertex column type from str to int.
     # SSSP preserves vertex type, convert for comparison
     nx_gpu_path_1_to_all["vertex"] = nx_gpu_path_1_to_all["vertex"].astype("int32")
-
+    # breakpoint()
     assert cugraph_path_1_to_all == nx_gpu_path_1_to_all
     assert cugraph_path_1_to_all == cupy_path_1_to_all
 

@@ -17,7 +17,7 @@ import gc
 
 import pytest
 
-# import pandas as pd
+import pandas as pd
 import cupy as cp
 import numpy as np
 from cupyx.scipy.sparse import coo_matrix as cp_coo_matrix
@@ -261,7 +261,8 @@ def get_cu_graph_nx_results_and_params(
     """
     Helper for fixtures returning Nx results and params.
     """
-    start_vertex = resultset.get_bfs_starts("{},{}".format(seed, dataset_name))
+    # start_vertex = resultset.get_bfs_starts("{},{}".format(seed, dataset_name))
+    start_vertex = resultset.get_bfs_results("{},{},starts".format(seed, dataset_name))
     nx_values = resultset.get_bfs_results(
         "{},{},{},{}".format(seed, depth_limit, dataset_name, directed)
     )
@@ -421,8 +422,8 @@ def test_bfs_nonnative_inputs_nx(
         _,
     ) = single_dataset_nxresults_startvertex_spc
 
-    cugraph_df = resultset.get_bfs_results(
-        "{},{},{}".format("karate", directed, "nonnative-nx")
+    cugraph_df = pd.DataFrame.from_dict(
+        resultset.get_bfs_results("{},{},{}".format("karate", directed, "nonnative-nx"))
     )
     compare_func = _compare_bfs
     compare_func(cugraph_df, nx_values, start_vertex)

@@ -36,6 +36,7 @@ from cugraph.testing import utils
 # =============================================================================
 # Parameters
 # =============================================================================
+# This will be refactored once the datasets variables are fixed/changed
 SEEDS = [42]
 
 DIRECTED_GRAPH_OPTIONS = [True, False]
@@ -43,8 +44,6 @@ DIRECTED_GRAPH_OPTIONS = [True, False]
 DEPTH_LIMITS = [None, 1, 5, 18]
 
 DATASETS = [dolphins, netscience, karate_disjoint]
-
-# DATASETS = [dolphins, netscience, karate_disjoint, karate]
 
 DATASETS_SMALL = [karate, dolphins, polbooks]
 
@@ -71,13 +70,16 @@ for ds in DATASETS + [karate]:
                 test_bfs_results[
                     str("{},{},{},{}".format(seed, depth_limit, ds, dirctd))
                 ] = nx_values
-    test_bfs_starts[str("{},{}".format(seed, ds))] = start_vertex
+    # test_bfs_starts[str("{},{}".format(seed, ds))] = start_vertex
+    test_bfs_results[str("{},{},starts".format(seed, ds))] = start_vertex
 
 for dirctd in DIRECTED_GRAPH_OPTIONS:
     Gnx = utils.generate_nx_graph_from_file(karate.get_path(), directed=dirctd)
     result = cugraph.bfs_edges(Gnx, source=7)
     cugraph_df = cudf.from_pandas(result)
-    test_bfs_results[str("{},{},{}").format(ds, dirctd, "nonnative-nx")] = cugraph_df
+    test_bfs_results[
+        str("{},{},{}").format(ds, dirctd, "nonnative-nx")
+    ] = cugraph_df.to_dict()
 
 
 # =============================================================================
@@ -130,18 +132,18 @@ for dirctd in DIRECTED_GRAPH_OPTIONS:
         if dirctd:
             test_sssp_results[
                 "nonnative_input,nx.DiGraph,{}".format(source)
-            ] = cugraph.sssp(Gnx, source)
+            ] = cugraph.sssp(Gnx, source).to_dict()
         else:
             test_sssp_results[
                 "nonnative_input,nx.Graph,{}".format(source)
-            ] = cugraph.sssp(Gnx, source)
+            ] = cugraph.sssp(Gnx, source).to_dict()
 
 
 G = nx.Graph()
 G.add_edge(0, 1, other=10)
 G.add_edge(1, 2, other=20)
 df = cugraph.sssp(G, 0, edge_attr="other")
-test_sssp_results["network_edge_attr"] = df
+test_sssp_results["network_edge_attr"] = df.to_dict()
 
 
 # =============================================================================
@@ -207,10 +209,28 @@ for graph in ["connected", "disconnected"]:
             ] = "ValueError"
 
 # test_shortest_path_length_no_target
+# breakpoint()
 test_paths_results[str("1,notarget,nx")] = nx.shortest_path_length(
     Gnx_DIS, source="1", weight="weight"
 )
-test_paths_results[str("1,notarget,cu")] = cugraph.shortest_path_length(Gnx_DIS, "1")
+test_paths_results[str("1,notarget,cu")] = cugraph.shortest_path_length(
+    Gnx_DIS, "1"
+).to_dict()
+
+#  pd.DataFrame.from_dict(test_sssp_results['nonnative_input,nx.Graph,1'].to_dict())
+# debugging
+"""print("test_bfs_results")
+print()
+print(test_bfs_results)
+print("test_bfs_starts")
+print()
+print(test_bfs_starts)
+print("test_sssp_results")
+print()
+print(test_sssp_results)
+print("test_paths_results")
+print()
+print(test_paths_results)"""
 
 
 # GETTERS
@@ -218,8 +238,8 @@ def get_bfs_results(test_params):
     return test_bfs_results[test_params]
 
 
-def get_bfs_starts(test_params):
-    return test_bfs_starts[test_params]
+# def get_bfs_starts(test_params):
+#    return test_bfs_starts[test_params]
 
 
 def get_sssp_results(test_params):
