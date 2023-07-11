@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import os
+import pickle
 
 # Assume test environment has the following dependencies installed
 import pytest
@@ -425,3 +426,65 @@ def convert_nx_view_to_dict(Gnx):
         for v in Gnx[u]:
             Gnx_dict[u][v] = Gnx[u][v]
     return Gnx_dict
+
+
+class ResultSet:
+    """
+    A Resultset Object, which imports output data from networkX algs or cuGraph algs
+    with networkX inputs. This is to be used in the testing module, as to fully remove
+    nx as a dependency.
+
+    Parameters
+    ----------
+    cloud_file_name : str
+        The string path for the pickled results file, stored on the cloud. (s3)
+
+    local_file_name : str
+        The string path for the pickled results file, stored locally somewhere.
+    """
+
+    # unsure about naming of 'cloud_result_file'
+    def __init__(self, cloud_result_file=None, local_result_file=None):
+        self._path = None
+        # self._result_file = None
+        if cloud_result_file is not None and local_result_file is not None:
+            raise ValueError(
+                "only one of cloud_result_file or local_result_file can be specified"
+            )
+        elif cloud_result_file is not None:
+            raise NotImplementedError("pickle file not yet on a cloud bucket")
+            # self._path=Path("https://data.rapids.ai/cugraph/tsting/"+cloud_result_file)
+            # not right syntax but the overall process would be similar to below: vv
+        elif local_result_file is not None:
+            self._path = Path("testing/" + local_result_file)
+            # breakpoint()
+            if self._path.exists() is False:
+                # try to load results, if file doesn't exist raise pref. RuntimeError
+                raise FileNotFoundError(local_result_file)
+            else:
+                with open("testing/" + local_result_file, "rb") as file:
+                    self.results = pickle.load(file)
+
+        else:
+            raise ValueError(
+                "must specify either cloud_result_file or local_result_file"
+            )
+
+
+def load_all_resultsfiles(force=False):
+    """
+    Fetches all pickled results files from s3 bucket, stores them locally..somewhere
+
+    Parameters
+    force : Boolean (default=False)
+        Overwrite any existing copies of datafiles
+
+    loc : str or PosixPath object
+        Tells us where to download all these datafiles
+    """
+    raise NotImplementedError()
+
+
+# Example of intended behavior:
+# bfs_results = ResultSet("bfs_results.pkl")
+# assert bfs_results["1,nonnative-nx"]

@@ -15,16 +15,16 @@ import sys
 from tempfile import NamedTemporaryFile
 import math
 
-import pandas as pd
+# import pandas as pd
 import cudf
 from cupyx.scipy.sparse import coo_matrix as cupy_coo_matrix
 import cupy
 
-from cugraph.testing import resultset
+from cugraph.testing import get_paths_results
 import pytest
 
 import cugraph
-
+from cugraph.testing import ResultSet
 
 CONNECTED_GRAPH = """1,5,3
 1,4,1
@@ -37,6 +37,8 @@ CONNECTED_GRAPH = """1,5,3
 """
 
 DISCONNECTED_GRAPH = CONNECTED_GRAPH + "8,9,4"
+
+paths_results = ResultSet(local_result_file="paths_results.pkl")
 
 
 @pytest.fixture
@@ -85,26 +87,27 @@ def test_connected_graph_shortest_path_length(graphs):
 
     path_1_to_1_length = cugraph.shortest_path_length(cugraph_G, 1, 1)
     assert path_1_to_1_length == 0.0
-    assert path_1_to_1_length == resultset.get_paths_results("1,1,connected,nx")
-    assert path_1_to_1_length == resultset.get_paths_results("1,1,connected,cu")
+    # assert path_1_to_1_length == get_paths_results("1,1,connected,nx")
+    assert path_1_to_1_length == paths_results.results("1,1,connected,nx")
+    assert path_1_to_1_length == get_paths_results("1,1,connected,cu")
     assert path_1_to_1_length == cugraph.shortest_path_length(cupy_df, 1, 1)
 
     path_1_to_5_length = cugraph.shortest_path_length(cugraph_G, 1, 5)
     assert path_1_to_5_length == 2.0
-    assert path_1_to_5_length == resultset.get_paths_results("1,5,connected,nx")
-    assert path_1_to_5_length == resultset.get_paths_results("1,5,connected,cu")
+    assert path_1_to_5_length == get_paths_results("1,5,connected,nx")
+    assert path_1_to_5_length == get_paths_results("1,5,connected,cu")
     assert path_1_to_5_length == cugraph.shortest_path_length(cupy_df, 1, 5)
 
     path_1_to_3_length = cugraph.shortest_path_length(cugraph_G, 1, 3)
     assert path_1_to_3_length == 2.0
-    assert path_1_to_3_length == resultset.get_paths_results("1,3,connected,nx")
-    assert path_1_to_3_length == resultset.get_paths_results("1,3,connected,cu")
+    assert path_1_to_3_length == get_paths_results("1,3,connected,nx")
+    assert path_1_to_3_length == get_paths_results("1,3,connected,cu")
     assert path_1_to_3_length == cugraph.shortest_path_length(cupy_df, 1, 3)
 
     path_1_to_6_length = cugraph.shortest_path_length(cugraph_G, 1, 6)
     assert path_1_to_6_length == 2.0
-    assert path_1_to_6_length == resultset.get_paths_results("1,6,connected,nx")
-    assert path_1_to_6_length == resultset.get_paths_results("1,6,connected,cu")
+    assert path_1_to_6_length == get_paths_results("1,6,connected,nx")
+    assert path_1_to_6_length == get_paths_results("1,6,connected,cu")
     assert path_1_to_6_length == cugraph.shortest_path_length(cupy_df, 1, 6)
 
 
@@ -116,7 +119,7 @@ def test_shortest_path_length_invalid_source(graphs):
     with pytest.raises(ValueError):
         cugraph.shortest_path_length(cugraph_G, -1, 1)
 
-    assert "ValueError" == resultset.get_paths_results("-1,1,connected,invalid")
+    assert "ValueError" == get_paths_results("-1,1,connected,invalid")
 
     with pytest.raises(ValueError):
         cugraph.shortest_path_length(cupy_df, -1, 1)
@@ -130,7 +133,7 @@ def test_shortest_path_length_invalid_target(graphs):
     with pytest.raises(ValueError):
         cugraph.shortest_path_length(cugraph_G, 1, 10)
 
-    assert "ValueError" == resultset.get_paths_results("1,10,disconnected,invalid")
+    assert "ValueError" == get_paths_results("1,10,disconnected,invalid")
 
     with pytest.raises(ValueError):
         cugraph.shortest_path_length(cupy_df, 1, 10)
@@ -144,7 +147,7 @@ def test_shortest_path_length_invalid_vertexes(graphs):
     with pytest.raises(ValueError):
         cugraph.shortest_path_length(cugraph_G, 0, 42)
 
-    assert "ValueError" == resultset.get_paths_results("0,42,connected,invalid")
+    assert "ValueError" == get_paths_results("0,42,connected,invalid")
 
     with pytest.raises(ValueError):
         cugraph.shortest_path_length(cupy_df, 0, 42)
@@ -161,7 +164,7 @@ def test_shortest_path_length_no_path(graphs):
 
     path_1_to_8 = cugraph.shortest_path_length(cugraph_G, 1, 8)
     assert path_1_to_8 == sys.float_info.max
-    assert resultset.get_paths_results("1,8,disconnected,invalid") in [
+    assert get_paths_results("1,8,disconnected,invalid") in [
         max_float_32,
         path_1_to_8,
     ]
@@ -174,10 +177,8 @@ def test_shortest_path_length_no_target(graphs):
     cugraph_G, cupy_df = graphs
 
     cugraph_path_1_to_all = cugraph.shortest_path_length(cugraph_G, 1)
-    nx_path_1_to_all = resultset.get_paths_results("1,notarget,nx")
-    nx_gpu_path_1_to_all = pd.DataFrame.from_dict(
-        resultset.get_paths_results("1,notarget,cu")
-    )
+    nx_path_1_to_all = get_paths_results("1,notarget,nx")
+    nx_gpu_path_1_to_all = cudf.DataFrame.from_dict(get_paths_results("1,notarget,cu"))
     cupy_path_1_to_all = cugraph.shortest_path_length(cupy_df, 1)
 
     # Cast networkx graph on cugraph vertex column type from str to int.

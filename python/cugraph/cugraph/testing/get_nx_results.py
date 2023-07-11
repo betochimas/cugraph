@@ -14,6 +14,9 @@
 from tempfile import NamedTemporaryFile
 import random
 
+# import json
+import pickle
+
 # import pandas as pd
 # import cupy as cp
 import numpy as np
@@ -28,7 +31,7 @@ from cugraph.experimental.datasets import (
     karate,
     polbooks,
 )
-from cugraph.testing import utils
+from cugraph.testing import utils, ResultSet
 
 # from cugraph.experimental import datasets
 
@@ -68,17 +71,17 @@ for ds in DATASETS + [karate]:
                 )
 
                 test_bfs_results[
-                    str("{},{},{},{}".format(seed, depth_limit, ds, dirctd))
+                    "{},{},{},{}".format(seed, depth_limit, ds, dirctd)
                 ] = nx_values
     # test_bfs_starts[str("{},{}".format(seed, ds))] = start_vertex
-    test_bfs_results[str("{},{},starts".format(seed, ds))] = start_vertex
+    test_bfs_results["{},{},starts".format(seed, ds)] = start_vertex
 
 for dirctd in DIRECTED_GRAPH_OPTIONS:
     Gnx = utils.generate_nx_graph_from_file(karate.get_path(), directed=dirctd)
     result = cugraph.bfs_edges(Gnx, source=7)
     cugraph_df = cudf.from_pandas(result)
     test_bfs_results[
-        str("{},{},{}").format(ds, dirctd, "nonnative-nx")
+        "{},{},{}".format(ds, dirctd, "nonnative-nx")
     ] = cugraph_df.to_dict()
 
 
@@ -93,7 +96,7 @@ for ds in DATASETS_SMALL:
     for source in SOURCES:
         Gnx = utils.generate_nx_graph_from_file(ds.get_path(), directed=True)
         nx_paths = nx.single_source_dijkstra_path_length(Gnx, source)
-        test_sssp_results[str("{},{},ssdpl").format(ds, source)] = nx_paths
+        test_sssp_results["{},{},ssdpl".format(ds, source)] = nx_paths
 
         M = utils.read_csv_for_nx(ds.get_path(), read_weights_in_sp=True)
         edge_attr = "weight"
@@ -185,10 +188,10 @@ for path in paths:
     )
     cu_path_length = cugraph.shortest_path_length(Gnx, path[0], target=path[1])
     test_paths_results[
-        str("{},{},{},nx").format(path[0], path[1], "connected")
+        "{},{},{},nx".format(path[0], path[1], "connected")
     ] = nx_path_length
     test_paths_results[
-        str("{},{},{},cu").format(path[0], path[1], "connected")
+        "{},{},{},cu".format(path[0], path[1], "connected")
     ] = cu_path_length
 
 # INVALID
@@ -201,30 +204,41 @@ for graph in ["connected", "disconnected"]:
     for path in paths:
         try:
             test_paths_results[
-                str("{},{},{},invalid").format(path[0], path[1], graph)
+                "{},{},{},invalid".format(path[0], path[1], graph)
             ] = cugraph.shortest_path_length(G, path[0], path[1])
         except ValueError:
             test_paths_results[
-                str("{},{},{},invalid").format(path[0], path[1], graph)
+                "{},{},{},invalid".format(path[0], path[1], graph)
             ] = "ValueError"
 
 # test_shortest_path_length_no_target
 # breakpoint()
-test_paths_results[str("1,notarget,nx")] = nx.shortest_path_length(
+test_paths_results["1,notarget,nx"] = nx.shortest_path_length(
     Gnx_DIS, source="1", weight="weight"
 )
-test_paths_results[str("1,notarget,cu")] = cugraph.shortest_path_length(
+test_paths_results["1,notarget,cu"] = cugraph.shortest_path_length(
     Gnx_DIS, "1"
 ).to_dict()
 
+# ResultSet(local_result_file="bfs_results.pkl")
+# serial_bfs_results = pickle.dumps(test_bfs_results)
+# serial_sssp_results = pickle.dumps(test_sssp_results)
+# serial_paths_results = pickle.dumps(test_paths_results)
+# with open('bfs_results2.pkl', 'wb') as f:
+# breakpoint()
+pickle.dump(test_bfs_results, open("testing/bfs_results.pkl", "wb"))
+pickle.dump(test_sssp_results, open("testing/sssp_results.pkl", "wb"))
+pickle.dump(test_paths_results, open("testing/paths_results.pkl", "wb"))
+
+my_bfs_results = ResultSet(local_result_file="bfs_results.pkl")
+my_sssp_results = ResultSet(local_result_file="sssp_results.pkl")
+my_paths_results = ResultSet(local_result_file="paths_results.pkl")
+# breakpoint()
 #  pd.DataFrame.from_dict(test_sssp_results['nonnative_input,nx.Graph,1'].to_dict())
 # debugging
 """print("test_bfs_results")
 print()
 print(test_bfs_results)
-print("test_bfs_starts")
-print()
-print(test_bfs_starts)
 print("test_sssp_results")
 print()
 print(test_sssp_results)
@@ -232,14 +246,18 @@ print("test_paths_results")
 print()
 print(test_paths_results)"""
 
+# print("serial_bfs_results")
+# print(serial_bfs_results)
+# breakpoint()
+# print("serial_sssp_results")
+# print(serial_sssp_results)
+# print("serial_paths_results")
+# print(serial_paths_results)
 
-# GETTERS
+
+# GETTERS (won't need these pretty soon)
 def get_bfs_results(test_params):
     return test_bfs_results[test_params]
-
-
-# def get_bfs_starts(test_params):
-#    return test_bfs_starts[test_params]
 
 
 def get_sssp_results(test_params):

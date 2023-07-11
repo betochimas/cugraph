@@ -31,7 +31,7 @@ from pylibcugraph.testing.utils import gen_fixture_params_product
 from cugraph.experimental.datasets import DATASETS_UNDIRECTED
 
 import cugraph
-from cugraph.testing import utils, resultset
+from cugraph.testing import utils, get_sssp_results
 from cugraph.experimental import datasets
 
 
@@ -128,21 +128,17 @@ def cugraph_call(gpu_benchmark_callable, input_G_or_matrix, source, edgevals=Tru
 def networkx_call(graph_file, source, edgevals=True):
     dataset_path = graph_file.get_path()
     dataset_name = graph_file.metadata["name"]
-    Gnx = resultset.get_sssp_results("Gnx,{}".format(dataset_name))
+    Gnx = get_sssp_results("Gnx,{}".format(dataset_name))
 
     if edgevals is False:
         # FIXME: no test coverage if edgevals is False, this assertion is never reached
         assert False
-        nx_paths = resultset.get_sssp_results(
-            "{},{},ssspl".format(dataset_name, source)
-        )
+        nx_paths = get_sssp_results("{},{},ssspl".format(dataset_name, source))
     else:
         # FIXME: The nx call below doesn't return accurate results as it seems to
         # not support 'weights'. It matches cuGraph result only if the weight column
         # is 1s.
-        nx_paths = resultset.get_sssp_results(
-            "{},{},ssdpl".format(dataset_name, source)
-        )
+        nx_paths = get_sssp_results("{},{},ssdpl".format(dataset_name, source))
 
     G = graph_file.get_graph(
         create_using=cugraph.Graph(directed=True), ignore_weights=not edgevals
@@ -260,8 +256,8 @@ def test_sssp_nonnative_inputs_nx(
     gpubenchmark, single_dataset_source_nxresults, cugraph_input_type
 ):
     (_, _, _, source, nx_paths, _) = single_dataset_source_nxresults
-    result = resultset.get_sssp_results(
-        "nonnative_input,{},{}".format(cugraph_input_type, source)
+    result = pd.DataFrame.from_dict(
+        get_sssp_results("nonnative_input,{},{}".format(cugraph_input_type, source))
     )  # should be a pd dataframe
     result = cudf.from_pandas(result)
     if np.issubdtype(result["distance"].dtype, np.integer):
@@ -363,15 +359,13 @@ def test_sssp_data_type_conversion(graph_file, source):
 
     # networkx call with int32 weights
     M["weight"] = M["weight"].astype(np.int32)
-    Gnx = resultset.get_sssp_results("Gnx,data_type_conversion,{}".format(dataset_name))
-    Gnx_edges = resultset.get_sssp_results(
+    Gnx = get_sssp_results("Gnx,data_type_conversion,{}".format(dataset_name))
+    Gnx_edges = get_sssp_results(
         "Gnx_edges,data_type_conversion,{}".format(dataset_name)
     )
     # assert nx weights is int
     assert type(list(Gnx_edges)[0][2]["weight"]) is int
-    nx_paths = resultset.get_sssp_results(
-        "nx_paths,data_type_conversion,{}".format(dataset_name)
-    )
+    nx_paths = get_sssp_results("nx_paths,data_type_conversion,{}".format(dataset_name))
     # Calculating mismatch
     err = 0
     for vid in cu_paths:
@@ -396,7 +390,9 @@ def test_sssp_data_type_conversion(graph_file, source):
 
 @pytest.mark.sg
 def test_sssp_networkx_edge_attr():
-    df = resultset.get_sssp_results("network_edge_attr")
+    # df = cudf.DataFrame.from_dict(get_sssp_results("network_edge_attr"))
+    df = pd.DataFrame.from_dict(get_sssp_results("network_edge_attr"))
+    df = cudf.DataFrame(df)
     df = df.set_index("vertex")
     assert df.loc[0, "distance"] == 0
     assert df.loc[1, "distance"] == 10

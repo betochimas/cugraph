@@ -30,7 +30,7 @@ import cudf
 from pylibcugraph.testing.utils import gen_fixture_params_product
 
 import cugraph
-from cugraph.testing import utils, resultset
+from cugraph.testing import utils, get_bfs_results
 from cugraph.experimental import datasets
 
 
@@ -262,8 +262,8 @@ def get_cu_graph_nx_results_and_params(
     Helper for fixtures returning Nx results and params.
     """
     # start_vertex = resultset.get_bfs_starts("{},{}".format(seed, dataset_name))
-    start_vertex = resultset.get_bfs_results("{},{},starts".format(seed, dataset_name))
-    nx_values = resultset.get_bfs_results(
+    start_vertex = get_bfs_results("{},{},starts".format(seed, dataset_name))
+    nx_values = get_bfs_results(
         "{},{},{},{}".format(seed, depth_limit, dataset_name, directed)
     )
 
@@ -423,7 +423,7 @@ def test_bfs_nonnative_inputs_nx(
     ) = single_dataset_nxresults_startvertex_spc
 
     cugraph_df = pd.DataFrame.from_dict(
-        resultset.get_bfs_results("{},{},{}".format("karate", directed, "nonnative-nx"))
+        get_bfs_results("{},{},{}".format("karate", directed, "nonnative-nx"))
     )
     compare_func = _compare_bfs
     compare_func(cugraph_df, nx_values, start_vertex)
